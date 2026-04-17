@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astro Verde | Fazenda Vertical</title>
+
+    <!-- Fontes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Ícones (Phosphor Icons) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Gráficos (Chart.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* -- Variáveis Globais Solicitadas e Complementos -- */
+        :root {
+            /* -- backgrounds gerais -- */
+            --bg-ink-black: #091016;
+            --bg-white: #f0f4ef;
+
+            /* -- backgrounds especificos -- */
+            --bg-navbar: #f0f4ef;
+            --bg-socials: #f0f4ef;
+            --bg-contact-btn: #091016;
+            --hover-bg-hero: 10px solid rgba(255, 255, 255, 0.5);
+            --box-bg-hero: 0 0 0 10px rgba(255, 255, 255, 0.2);
+
+            /* -- Paleta de Cores (Textos) -- */
+            --text-black: #08090a;
+            --text-white: #f0f4ef;
+            --text-metal: #343a40;
+
+            /* -- Textos especificos -- */
+            --text-navbar: #080808;
+            --text-socials: #08090a;
+            --text-contact-btn: #f0f4ef;
+
+            /* -- itens -- */
+            --primary-pink: #fc6471;
+            /* Alertas e Erros */
+            --secondary-green: #98ce00;
+            /* Sucesso e Destaques Astro Verde */
+            --border-glow: rgba(120, 111, 172, 0.1);
+            --hover-bg: #04080b;
+            --border-translucent: rgba(255, 255, 255, 0.1);
+
+            /* Configurações - Base */
+            --font-main: "Inter", "Roboto", Arial, sans-serif;
+            --max-width: 1400px;
+            --header-height: 80px;
+            --sidebar-width: 260px;
+
+            /* Cores extras para UI */
+            --card-bg: #ffffff;
+            --bg-app: #e8ece7;
+            --text-muted: #6c757d;
+            --warning-yellow: #f5b700;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-main);
+        }
+
+        body {
+            background-color: var(--bg-app);
+            color: var(--text-black);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-ink-black);
+            color: var(--text-white);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .brand {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--secondary-green);
+            border-bottom: 1px solid var(--border-translucent);
+            gap: 0.75rem;
+        }
+
+        .brand img {
+            width: 40px;
+            height: 40px;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 1.5rem 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--text-white);
+            text-decoration: none;
+            transition: background 0.2s;
+            cursor: pointer;
+            opacity: 0.8;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background-color: var(--hover-bg);
+            opacity: 1;
+            border-left: 4px solid var(--secondary-green);
+        }
+
+        .nav-item i {
+            font-size: 1.25rem;
+        }
+
+        /* --- Main Content --- */
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .topbar {
+            height: var(--header-height);
+            background-color: var(--bg-navbar);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+
+        .page-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-navbar);
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .sys-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            background: #e1f0c4;
+            color: #3f5e00;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+        }
+
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background-color: var(--secondary-green);
+            border-radius: 50%;
+            box-shadow: 0 0 0 0 rgba(152, 206, 0, 0.7);
+            animation: pulsing 1.5s infinite;
+        }
+
+        @keyframes pulsing {
+            0% {
+                box-shadow: 0 0 0 0 rgba(152, 206, 0, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 6px rgba(152, 206, 0, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(152, 206, 0, 0);
+            }
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-metal);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background-color: var(--primary-pink);
+            color: var(--text-white);
+            font-size: 0.65rem;
+            font-weight: bold;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .view-section {
+            display: none;
+            max-width: var(--max-width);
+            margin: 0 auto;
+        }
+
+        .view-section.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- Grid & Cards --- */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: var(--secondary-green);
+        }
+
+        .card.warning::before {
+            background-color: var(--warning-yellow);
+        }
+
+        .card.danger::before {
+            background-color: var(--primary-pink);
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-header i {
+            font-size: 1.5rem;
+            color: var(--text-metal);
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-black);
+            margin-bottom: 0.25rem;
+        }
+
+        .kpi-sub {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .status-text {
+            font-weight: 600;
+        }
+
+        .status-ok {
+            color: var(--secondary-green);
+        }
+
+        .status-alert {
+            color: var(--warning-yellow);
+        }
+
+        .status-danger {
+            color: var(--primary-pink);
+        }
+
+        /* --- Content Grid (Charts & Lists) --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .panel {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            color: var(--text-black);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        /* --- List Items --- */
+        .list-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background-color: var(--bg-white);
+            border-radius: 8px;
+            border: 1px solid var(--border-glow);
+        }
+
+        .item-info h4 {
+            font-size: 0.95rem;
+            color: var(--text-black);
+            margin-bottom: 0.2rem;
+        }
+
+        .item-info p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .badge-status {
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-status.active {
+            background: #e1f0c4;
+            color: #3f5e00;
+        }
+
+        .badge-status.warning {
+            background: #fef0c7;
+            color: #b54708;
+        }
+
+        /* --- Buttons --- */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background-color: var(--bg-contact-btn);
+            color: var(--text-contact-btn);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--hover-bg);
+        }
+
+        .btn-action {
+            background-color: var(--secondary-green);
+            color: var(--bg-ink-black);
+            font-weight: 600;
+        }
+
+        .btn-action:hover {
+            filter: brightness(0.9);
+        }
+
+        .btn-danger {
+            background-color: var(--primary-pink);
+            color: #fff;
+        }
+
+        /* --- Modal Customizado (Substituindo Alert) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(9, 16, 22, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            width: 90%;
+            max-width: 400px;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transform: translateY(-20px);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-icon.warning {
+            color: var(--warning-yellow);
+        }
+
+        .modal-icon.success {
+            color: var(--secondary-green);
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-black);
+        }
+
+        .modal-text {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* --- Responsividade --- */
+        @media (max-width: 992px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                align-items: center;
+                padding: 0;
+            }
+
+            .brand {
+                border-bottom: none;
+                border-right: 1px solid var(--border-translucent);
+            }
+
+            .nav-menu {
+                display: flex;
+                padding: 0;
+                overflow-x: auto;
+            }
+
+            .nav-item {
+                padding: 1rem;
+                border-left: none;
+                border-bottom: 4px solid transparent;
+            }
+
+            .nav-item:hover,
+            .nav-item.active {
+                border-left: none;
+                border-bottom: 4px solid var(--secondary-green);
+            }
+
+            .nav-item span {
+                display: none;
+            }
+
+            .topbar {
+                padding: 0 1rem;
+            }
+
+            .content-area {
+                padding: 1rem;
+            }
+        }
+
+        .team-ft--sidebar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .team-content {
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .team-content p.year-info {
+            font-size: 0.8rem;
+        }
+
+        .designed h4 a {
+            color: var(--secondary-green);
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="brand">
+
+            <img src="./ASTRO.png" alt="">
+            <span>Astro Verde</span>
+        </div>
+        <nav class="nav-menu">
+            <a class="nav-item active" onclick="switchTab('dashboard', this)">
+                <i class="ph ph-squares-four"></i>
+                <span>Dashboard</span>
+            </a>
+            <a class="nav-item" onclick="switchTab('estoque', this)">
+                <i class="ph ph-package"></i>
+                <span>Insumos (RF11)</span>
+            </a>
+            <a class="nav-item" onclick="switchTab('safras', this)">
+                <i class="ph ph-plant"></i>
+                <span>Safras (RF05)</span>
+            </a>
+            <a class="nav-item" onclick="switchTab('log', this)">
+                <i class="ph ph-clock"></i>
+                <span>Log</span>
+            </a>
+        </nav>
+        <div class="team-ft--sidebar">
+            <div class="team-content">
+                <div class="team-info">
+                    <h4>INOVATEC</h4>
+                    <p class="year-info">2026</p>
+                </div>
+                <div class="designed">
+                    <p>feito por</p>
+                    <h4><a href="https://www.instagram.com/verde.astro/">Astro Verde</a></h4>
+                </div>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- Main Interface -->
+    <main class="main-wrapper">
+        <!-- Topbar -->
+        <header class="topbar">
+            <h2 class="page-title" id="pageTitle">Visão Geral</h2>
+
+            <div class="topbar-actions">
+                <!-- RF06: Módulos sincronizados -->
+                <div class="sys-status">
+                    <div class="pulse"></div>
+                    Módulos Sincronizados
+                </div>
+
+                <button class="btn-icon" onclick="showNotificationModal()">
+                    <i class="ph ph-bell"></i>
+                    <span class="badge" id="notifBadge">1</span>
+                </button>
+
+                <div
+                    style="width: 40px; height: 40px; border-radius: 50%; background: var(--bg-ink-black); color: var(--text-white); display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                    OP
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="content-area">
+
+            <!-- DASHBOARD VIEW -->
+            <section id="dashboard" class="view-section active">
+                <!-- KPIs -->
+                <div class="kpi-grid">
+                    <!-- RF01: Eficiência Hídrica -->
+                    <div class="card">
+                        <div class="kpi-header">
+                            Nível do Reservatório
+                            <i class="ph ph-drop"></i>
+                        </div>
+                        <div class="kpi-value" id="waterLevel">88%</div>
+                        <div class="kpi-sub">Eficiência Hídrica: <span class="status-ok">99%</span></div>
+                    </div>
+
+                    <!-- RF08: Monitoramento pH -->
+                    <div class="card" id="cardPh">
+                        <div class="kpi-header">
+                            Nível de pH
+                            <i class="ph ph-flask"></i>
+                        </div>
+                        <div class="kpi-value" id="phValue">6.1</div>
+                        <div class="kpi-sub">Status: <span class="status-text status-ok" id="phStatus">Ideal (5.5 -
+                                6.5)</span></div>
+                    </div>
+
+                    <!-- RF07: Fluxo NFT -->
+                    <div class="card">
+                        <div class="kpi-header">
+                            Fluxo Laminar (NFT)
+                            <i class="ph ph-waves"></i>
+                        </div>
+                        <div class="kpi-value" style="font-size: 1.5rem; margin-top: 0.5rem;" id="nftStatusVal">
+                            Circulando</div>
+                        <div class="kpi-sub" style="margin-top: 0.5rem;">Bomba Principal: <span
+                                class="status-ok">Ligada</span></div>
+                    </div>
+
+                    <!-- RF02: Iluminação 6000K -->
+                    <div class="card">
+                        <div class="kpi-header">
+                            Iluminação LED (6000K)
+                            <i class="ph ph-sun-dim"></i>
+                        </div>
+                        <div class="kpi-value" style="font-size: 1.5rem; margin-top: 0.5rem;">Ativo (Ciclo 16/8)</div>
+                        <div class="kpi-sub" style="margin-top: 0.5rem;">Desliga em: <span>04h 30m</span></div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <!-- Histórico Ambiental -->
+                    <div class="panel">
+                        <div class="panel-title">
+                            Histórico Ambiental (Temp/Umidade)
+                            <button class="btn btn-primary" onclick="downloadCSV()"><i
+                                    class="ph ph-download-simple"></i> Exportar (RF10)</button>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="envChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Controles Rápidos -->
+                    <div class="panel">
+                        <div class="panel-title">Controle e Ajustes</div>
+
+                        <div class="list-group">
+                            <div class="list-item" style="background: var(--bg-ink-black); color: var(--text-white);">
+                                <div class="item-info">
+                                    <h4 style="color: var(--text-white);">Ajuste de pH (CU OPE 01)</h4>
+                                    <p style="color: #aaa;">Acionar bomba dosadora manualmente</p>
+                                </div>
+                                <button class="btn btn-action" onclick="corrigirPh()">Injetar</button>
+                            </div>
+
+                            <div class="list-item">
+                                <div class="item-info">
+                                    <h4>Simular Falha NFT (RF07)</h4>
+                                    <p>Testar sistema de alerta</p>
+                                </div>
+                                <button class="btn btn-danger" onclick="simularFalhaNFT()">Simular</button>
+                            </div>
+
+                            <div class="list-item">
+                                <div class="item-info">
+                                    <h4>Módulos Físicos (RF06)</h4>
+                                    <p>Torre A - 3 Módulos Empilhados</p>
+                                </div>
+                                <span class="badge-status active">Sincronizados</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- INSUMOS VIEW (RF11) -->
+            <section id="estoque" class="view-section">
+                <div class="panel">
+                    <div class="panel-title">
+                        Gestão de Insumos e Nutrientes
+                        <button class="btn btn-action" onclick="addInsumo()">+ Novo Insumo</button>
+                    </div>
+                    <div class="list-group">
+                        <div class="list-item">
+                            <div class="item-info">
+                                <h4>Solução Nutritiva A (Macronutrientes)</h4>
+                                <p>Volume atual: 15 Litros</p>
+                            </div>
+                            <span class="badge-status active">Estoque Normal</span>
+                        </div>
+                        <div class="list-item">
+                            <div class="item-info">
+                                <h4>Solução Nutritiva B (Micronutrientes)</h4>
+                                <p>Volume atual: 12 Litros</p>
+                            </div>
+                            <span class="badge-status active">Estoque Normal</span>
+                        </div>
+                        <div class="list-item" style="border-left: 4px solid var(--warning-yellow);">
+                            <div class="item-info">
+                                <h4>Solução Redutora de pH</h4>
+                                <p>Volume atual: 2 Litros</p>
+                            </div>
+                            <span class="badge-status warning">Estoque Baixo</span>
+                        </div>
+                        <div class="list-item">
+                            <div class="item-info">
+                                <h4>Sementes - Alface Crespa</h4>
+                                <p>Quantidade: 5.000 unidades</p>
+                            </div>
+                            <span class="badge-status active">Estoque Normal</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SAFRAS VIEW (RF05/RF04) -->
+            <section id="safras" class="view-section">
+                <div class="panel">
+                    <div class="panel-title">
+                        Planejamento de Colheita
+                        <button class="btn btn-action" onclick="addSafra()">+ Nova Safra</button>
+                    </div>
+                    <div class="list-group">
+                        <div class="list-item">
+                            <div class="item-info">
+                                <h4>Alface Crespa - Lote 04A</h4>
+                                <p>Data Plantio: 01/04/2026 | Previsão Colheita: 10/05/2026</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 0.85rem; font-weight: 600; color: var(--secondary-green);">Em
+                                    Andamento</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">Dia 7/40</div>
+                            </div>
+                        </div>
+                        <div class="list-item">
+                            <div class="item-info">
+                                <h4>Manjericão - Lote 02B</h4>
+                                <p>Data Plantio: 15/03/2026 | Previsão Colheita: 25/04/2026</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 0.85rem; font-weight: 600; color: var(--secondary-green);">Fase
+                                    Final</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">Dia 24/40</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LOG VIEW -->
+            <section id="log" class="view-section">
+                <div class="panel">
+                    <div class="panel-title">
+                        Status dos Módulos
+                    </div>
+                    <div id="moduleStatus" class="list-group">
+                        <!-- Module status items will be inserted here by JavaScript -->
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">
+                        Logs Recentes
+                    </div>
+                    <div id="logsContainer" class="list-group">
+                        <!-- Log entries will be inserted here by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Sistema de Modal Customizado (Substitui alerts) -->
+    <div class="modal-overlay" id="customModal">
+        <div class="modal-content">
+            <i class="ph ph-warning-circle modal-icon" id="modalIcon"></i>
+            <h3 class="modal-title" id="modalTitle">Atenção</h3>
+            <p class="modal-text" id="modalMessage">Mensagem aqui</p>
+            <button class="btn btn-primary" style="width: 100%;" onclick="closeModal()">Entendido</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Lógica de Navegação de Abas ---
+        function switchTab(tabId, element) {
+            // Atualiza menu
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+
+            // Atualiza views
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+
+            // Atualiza Título
+            const titles = {
+                'dashboard': 'Visão Geral (Monitoramento Contínuo)',
+                'estoque': 'Gestão de Insumos (RF11)',
+                'safras': 'Planejamento e Registro de Safra (RF04 / RF05)',
+                'log': 'Logs do Sistema'
+            };
+            document.getElementById('pageTitle').innerText = titles[tabId];
+        }
+
+        // --- Sistema de Modal ---
+        function showModal(title, message, type = 'warning') {
+            const modal = document.getElementById('customModal');
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMessage').innerText = message;
+
+            const icon = document.getElementById('modalIcon');
+            icon.className = 'ph modal-icon';
+            if (type === 'warning' || type === 'danger') {
+                icon.classList.add('ph-warning-circle', 'warning');
+                if (type === 'danger') icon.style.color = 'var(--primary-pink)';
+            } else {
+                icon.classList.add('ph-check-circle', 'success');
+            }
+
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').classList.remove('show');
+        }
+
+        function showNotificationModal() {
+            showModal('Notificações do Sistema', 'Alerta: Estoque de Solução Redutora de pH está baixo (2L restantes). Reabasteça em breve.', 'warning');
+            document.getElementById('notifBadge').style.display = 'none';
+        }
+
+        // --- Simulação de Dados em Tempo Real (Sensores IoT) ---
+        let phAtual = 6.1;
+        let nftAtivo = true;
+
+        function atualizarSensores() {
+            if (!nftAtivo) return; // Se houver falha, congela simulação até corrigir
+
+            // Simular leve variação de pH (RF08)
+            const variacao = (Math.random() - 0.5) * 0.1;
+            phAtual += variacao;
+
+            // Limites de segurança da simulação
+            if (phAtual > 7.0) phAtual = 7.0;
+            if (phAtual < 5.0) phAtual = 5.0;
+
+            const phEl = document.getElementById('phValue');
+            const phStatus = document.getElementById('phStatus');
+            const cardPh = document.getElementById('cardPh');
+
+            phEl.innerText = phAtual.toFixed(1);
+
+            // Verificação de Faixa Ideal (5.5 a 6.5)
+            if (phAtual > 6.5 || phAtual < 5.5) {
+                phStatus.innerText = "Fora do Ideal! Ajuste Necessário";
+                phStatus.className = "status-text status-danger";
+                cardPh.classList.add('danger');
+            } else {
+                phStatus.innerText = "Ideal (5.5 - 6.5)";
+                phStatus.className = "status-text status-ok";
+                cardPh.classList.remove('danger');
+            }
+
+            // Simulação do Nível de Água (Diminui muito lentamente)
+            let level = parseFloat(document.getElementById('waterLevel').innerText);
+            if (Math.random() > 0.8 && level > 80) {
+                document.getElementById('waterLevel').innerText = (level - 0.1).toFixed(1) + '%';
+            }
+        }
+
+        // Atualiza a cada 3 segundos
+        setInterval(atualizarSensores, 3000);
+
+        // --- Funcionalidades Específicas (RFs) ---
+
+        // [CU OPE 01] e RF08: Corrigir pH via bomba dosadora
+        function corrigirPh() {
+            showModal('Ajuste de pH', 'Acionando bomba dosadora de solução corretora... pH estabilizado para 6.0.', 'success');
+            phAtual = 6.0;
+            document.getElementById('phValue').innerText = "6.0";
+            document.getElementById('phStatus').innerText = "Ideal (5.5 - 6.5)";
+            document.getElementById('phStatus').className = "status-text status-ok";
+            document.getElementById('cardPh').classList.remove('danger');
+        }
+
+        // RF07: Alerta de Interrupção NFT
+        function simularFalhaNFT() {
+            nftAtivo = false;
+            const el = document.getElementById('nftStatusVal');
+            el.innerText = "INTERROMPIDO";
+            el.style.color = "var(--primary-pink)";
+            el.nextElementSibling.innerHTML = 'Bomba Principal: <span class="status-danger">Falha Crítica</span>';
+
+            showModal('CRÍTICO: RF07 - Fluxo NFT', 'Interrupção detectada no fluxo laminar de nutrientes! Notificação enviada para a equipe. Verifique as bombas imediatamente.', 'danger');
+
+            // Auto restaura após 10 seg na simulação para poder continuar testando
+            setTimeout(() => {
+                nftAtivo = true;
+                el.innerText = "Circulando";
+                el.style.color = "var(--text-black)";
+                el.nextElementSibling.innerHTML = 'Bomba Principal: <span class="status-ok">Ligada</span>';
+            }, 10000);
+        }
+
+        // RF10: Exportação de Relatório (Dummy)
+        function downloadCSV() {
+            showModal('Exportação Concluída', 'O relatório histórico de umidade, temperatura e pH (CSV) foi gerado com sucesso.', 'success');
+        }
+
+        // --- Sistema de Logs ---
+        let modules = [
+            { id: 'torreA', name: 'Torre A - 3 Módulos Empilhados', active: true },
+            { id: 'torreB', name: 'Torre B - 2 Módulos Empilhados', active: true },
+            { id: 'bombaPh', name: 'Bomba Dosadora de pH', active: true },
+            { id: 'bombaNutrientes', name: 'Bomba dos Nutrientes', active: false },
+            { id: 'iluminacao', name: 'Sistema de Iluminação LED', active: true }
+        ];
+
+        let logs = [];
+
+        function addLog(type, message) {
+            const timestamp = new Date().toLocaleString('pt-BR');
+            logs.unshift({ timestamp, type, message });
+            if (logs.length > 100) logs.pop();
+            updateLogsDisplay();
+        }
+
+        function updateModuleStatusDisplay() {
+            const container = document.getElementById('moduleStatus');
+            container.innerHTML = '';
+            modules.forEach(module => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.innerHTML = `
+                    <div class="item-info">
+                        <h4>${module.name}</h4>
+                        <p>Status: <span class="${module.active ? 'status-ok' : 'status-danger'}">${module.active ? 'Ativo' : 'Inativo'}</span></p>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function updateLogsDisplay() {
+            const container = document.getElementById('logsContainer');
+            container.innerHTML = '';
+            logs.forEach(log => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.innerHTML = `
+                    <div class="item-info">
+                        <h4>${log.type}</h4>
+                        <p>${log.message}</p>
+                    </div>
+                    <span class="badge-status">${log.timestamp}</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Simular alterações de status dos módulos a cada 5 segundos (para demonstração)
+        setInterval(() => {
+            const randomIndex = Math.floor(Math.random() * modules.length);
+            modules[randomIndex].active = !modules[randomIndex].active;
+            updateModuleStatusDisplay();
+            addLog('Status do Módulo', `Módulo ${modules[randomIndex].name} está agora ${modules[randomIndex].active ? 'ativo' : 'inativo'}.`);
+        }, 5000);
+
+        // --- Funcionalidades Específicas (RFs) com Logs ---
+
+        // [CU OPE 01] e RF08: Corrigir pH via bomba dosadora
+        function corrigirPh() {
+            showModal('Ajuste de pH', 'Acionando bomba dosadora de solução corretora... pH estabilizado para 6.0.', 'success');
+            phAtual = 6.0;
+            document.getElementById('phValue').innerText = "6.0";
+            document.getElementById('phStatus').innerText = "Ideal (5.5 - 6.5)";
+            document.getElementById('phStatus').className = "status-text status-ok";
+            document.getElementById('cardPh').classList.remove('danger');
+            addLog('Ajuste de pH', 'Bomba dosadora de solução corretora acionada. pH estabilizado para 6.0.');
+        }
+
+        // RF07: Alerta de Interrupção NFT
+        function simularFalhaNFT() {
+            nftAtivo = false;
+            const el = document.getElementById('nftStatusVal');
+            el.innerText = "INTERROMPIDO";
+            el.style.color = "var(--primary-pink)";
+            el.nextElementSibling.innerHTML = 'Bomba Principal: <span class="status-danger">Falha Crítica</span>';
+
+            showModal('CRÍTICO: RF07 - Fluxo NFT', 'Interrupção detectada no fluxo laminar de nutrientes! Notificação enviada para a equipe. Verifique as bombas imediatamente.', 'danger');
+            addLog('Falha NFT', 'Interrupção detectada no fluxo laminar de nutrientes.');
+
+            // Auto restaura após 10 seg na simulação para poder continuar testando
+            setTimeout(() => {
+                nftAtivo = true;
+                el.innerText = "Circulando";
+                el.style.color = "var(--text-black)";
+                el.nextElementSibling.innerHTML = 'Bomba Principal: <span class="status-ok">Ligada</span>';
+                addLog('Recuperação NFT', 'Fluxo laminar de nutrientes restaurado. Bomba principal ligada.');
+            }, 10000);
+        }
+
+        // RF10: Exportação de Relatório (Dummy)
+        function downloadCSV() {
+            showModal('Exportação Concluída', 'O relatório histórico de umidade, temperatura e pH (CSV) foi gerado com sucesso.', 'success');
+            addLog('Exportação de Relatório', 'Relatório histórico de umidade, temperatura e pH exportado com sucesso.');
+        }
+
+        // Adicionar Novo Insumo
+        function addInsumo() {
+            showModal('Adicionar Insumo', 'Insumo adicionado com sucesso.', 'success');
+            addLog('Adição de Insumo', 'Novo insumo registrado no sistema.');
+        }
+
+        // Adicionar Nova Safra
+        function addSafra() {
+            showModal('Adicionar Safra', 'Nova safra planejada com sucesso.', 'success');
+            addLog('Adição de Safra', 'Nova safra registrada no sistema.');
+        }
+
+        // --- Configuração do Gráfico Chart.js ---
+        document.addEventListener("DOMContentLoaded", () => {
+            const ctx = document.getElementById('envChart').getContext('2d');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+                    datasets: [
+                        {
+                            label: 'Temperatura (°C)',
+                            data: [22, 21.5, 22.5, 24, 23.5, 22.5, 22],
+                            borderColor: '#98ce00',
+                            backgroundColor: 'rgba(152, 206, 0, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Umidade (%)',
+                            data: [65, 68, 62, 58, 60, 64, 66],
+                            borderColor: '#343a40',
+                            borderDash: [5, 5],
+                            tension: 0.4,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { font: { family: "'Inter', sans-serif" } }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        });
+
+        // Inicializa a exibição dos módulos e logs
+        updateModuleStatusDisplay();
+        updateLogsDisplay();
+
+    </script>
+</body>
+
+</html>

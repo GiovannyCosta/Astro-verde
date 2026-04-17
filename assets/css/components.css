@@ -142,6 +142,10 @@
   border: 1px solid var(--border-glow);
 }
 
+.list-item-warning {
+  border-left: 4px solid var(--warning-yellow);
+}
+
 /* Texto principal do item */
 .item-info h4 {
   font-size: 0.95rem;
@@ -325,6 +329,76 @@
 }
 
 /* ============================================================
+   UTILITÁRIOS DE TEXTO E TAMANHO
+   ============================================================ */
+
+/* Unidade ao lado do valor principal de um KPI (ex: mS/cm) */
+.kpi-unit {
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin-left: 0.1rem;
+}
+
+/* KPI value em tamanho médio — para textos mais longos (NFT, iluminação) */
+.kpi-value-md {
+  font-size: 1.4rem;
+  margin-top: 0.5rem;
+}
+
+/* kpi-sub com espaçamento superior extra */
+.kpi-sub-spaced {
+  margin-top: 0.5rem;
+}
+
+/* Contagem de entradas no log */
+.log-count-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* ============================================================
+   UTILITÁRIOS DE LAYOUT
+   ============================================================ */
+
+/* Botão que ocupa largura total do container */
+.btn-full {
+  width: 100%;
+}
+
+/* Oculto por padrão (JS remove esta classe quando necessário) */
+.hidden {
+  display: none !important;
+}
+
+/* ============================================================
+   MODAL DE FORMULÁRIO (Insumos / Safras)
+   ============================================================ */
+
+/* Modal com largura maior e texto alinhado à esquerda */
+.modal-content-form {
+  max-width: 480px;
+  text-align: left;
+}
+
+/* Título do modal de formulário com espaço inferior */
+.form-modal-title {
+  margin-bottom: 1.25rem;
+}
+
+/* Container dos botões de ação do formulário */
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+/* Cada botão ocupa metade do espaço disponível */
+.form-btn {
+  flex: 1;
+}
+
+/* ============================================================
    INPUTS DENTRO DE MODAIS
    ============================================================ */
 
@@ -335,7 +409,7 @@
   border-color: var(--secondary-green) !important;
 }
 
-/* Badge de notificação — oculto por padrão, aparece quando há alertas */
+/* Badge de notificação — oculto por padrão */
 #notifBadge {
   display: none;
 }

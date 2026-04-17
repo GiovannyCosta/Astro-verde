@@ -1,17 +1,35 @@
 /*
- * modules/inventory.js — Gestão de Insumos (RF11)
+ * modules/inventory.js - Gestão de Insumos (RF11)
+ *
+ * O HTML gerado usa apenas classes e data-attributes,
+ * mantendo CSS e eventos fora do markup.
  */
 
 const Inventory = {
 
   items: [
-    { id: 1, name: 'Solução Nutritiva A (Macronutrientes)', quantity: 15,   unit: 'L',  minStock: 5    },
-    { id: 2, name: 'Solução Nutritiva B (Micronutrientes)', quantity: 12,   unit: 'L',  minStock: 5    },
-    { id: 3, name: 'Solução Redutora de pH',                quantity: 2,    unit: 'L',  minStock: 3    },
-    { id: 4, name: 'Sementes — Alface Crespa',              quantity: 5000, unit: 'un', minStock: 1000 },
+    { id: 1, name: 'Solução Nutritiva A (Macronutrientes)', quantity: 15, unit: 'L', minStock: 5 },
+    { id: 2, name: 'Solução Nutritiva B (Micronutrientes)', quantity: 12, unit: 'L', minStock: 5 },
+    { id: 3, name: 'Solução Redutora de pH', quantity: 2, unit: 'L', minStock: 3 },
+    { id: 4, name: 'Sementes - Alface Crespa', quantity: 5000, unit: 'un', minStock: 1000 },
   ],
 
   _nextId: 5,
+
+  init() {
+    const container = document.getElementById('inventoryList');
+    if (!container || container.dataset.bound === 'true') return;
+
+    container.dataset.bound = 'true';
+    container.addEventListener('click', event => {
+      const button = event.target.closest('[data-inventory-action]');
+      if (!button) return;
+
+      const itemId = Number(button.dataset.id);
+      if (button.dataset.inventoryAction === 'edit') this.openEditForm(itemId);
+      if (button.dataset.inventoryAction === 'remove') this.remove(itemId);
+    });
+  },
 
   render() {
     const container = document.getElementById('inventoryList');
@@ -26,22 +44,18 @@ const Inventory = {
     this.items.forEach(item => {
       const isLow = item.quantity <= item.minStock;
       const div = document.createElement('div');
-      div.className = 'list-item';
-      if (isLow) div.style.borderLeft = '4px solid var(--warning-yellow)';
-
+      div.className = `list-item${isLow ? ' list-item-warning' : ''}`;
       div.innerHTML = `
         <div class="item-info">
           <h4>${item.name}</h4>
-          <p>Quantidade atual: ${item.quantity} ${item.unit} &nbsp;|&nbsp; Mínimo: ${item.minStock} ${item.unit}</p>
+          <p>Quantidade: ${item.quantity} ${item.unit} &nbsp;|&nbsp; Mínimo: ${item.minStock} ${item.unit}</p>
         </div>
-        <div style="display:flex;align-items:center;gap:.75rem">
+        <div class="item-actions">
           <span class="badge-status ${isLow ? 'warning' : 'active'}">
             ${isLow ? 'Estoque Baixo' : 'Estoque OK'}
           </span>
-          <button class="btn btn-primary" style="padding:.3rem .7rem;font-size:.8rem"
-            onclick="Inventory.openEditForm(${item.id})">Editar</button>
-          <button class="btn btn-danger" style="padding:.3rem .7rem;font-size:.8rem"
-            onclick="Inventory.remove(${item.id})">Remover</button>
+          <button class="btn btn-primary btn-sm" type="button" data-inventory-action="edit" data-id="${item.id}">Editar</button>
+          <button class="btn btn-danger btn-sm" type="button" data-inventory-action="remove" data-id="${item.id}">Remover</button>
         </div>
       `;
       container.appendChild(div);
@@ -51,22 +65,19 @@ const Inventory = {
   openAddForm() {
     document.getElementById('formModalTitle').textContent = 'Novo Insumo';
     document.getElementById('formModalBody').innerHTML = `
-      <div style="display:flex;flex-direction:column;gap:.75rem">
-        <div>
-          <label style="font-size:.85rem;font-weight:600;color:var(--text-metal)">Nome do Insumo</label>
-          <input id="fi_name" type="text" placeholder="Ex: Solução Nutritiva A"
-            style="width:100%;margin-top:.35rem;padding:.55rem .75rem;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:.9rem;font-family:var(--font-main)">
+      <div class="form-grid">
+        <div class="form-field">
+          <label class="form-label">Nome do Insumo</label>
+          <input id="fi_name" class="form-input" type="text" placeholder="Ex: Solução Nutritiva A">
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
-          <div>
-            <label style="font-size:.85rem;font-weight:600;color:var(--text-metal)">Quantidade</label>
-            <input id="fi_qty" type="number" min="0" placeholder="0"
-              style="width:100%;margin-top:.35rem;padding:.55rem .75rem;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:.9rem;font-family:var(--font-main)">
+        <div class="form-row-2">
+          <div class="form-field">
+            <label class="form-label">Quantidade</label>
+            <input id="fi_qty" class="form-input" type="number" min="0" placeholder="0">
           </div>
-          <div>
-            <label style="font-size:.85rem;font-weight:600;color:var(--text-metal)">Unidade</label>
-            <select id="fi_unit"
-              style="width:100%;margin-top:.35rem;padding:.55rem .75rem;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:.9rem;font-family:var(--font-main)">
+          <div class="form-field">
+            <label class="form-label">Unidade</label>
+            <select id="fi_unit" class="form-select">
               <option value="L">L (litros)</option>
               <option value="mL">mL</option>
               <option value="kg">kg</option>
@@ -75,22 +86,28 @@ const Inventory = {
             </select>
           </div>
         </div>
-        <div>
-          <label style="font-size:.85rem;font-weight:600;color:var(--text-metal)">Estoque Mínimo (alerta abaixo disso)</label>
-          <input id="fi_min" type="number" min="0" placeholder="0"
-            style="width:100%;margin-top:.35rem;padding:.55rem .75rem;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:.9rem;font-family:var(--font-main)">
+        <div class="form-field">
+          <label class="form-label">Estoque Mínimo (alerta abaixo disso)</label>
+          <input id="fi_min" class="form-input" type="number" min="0" placeholder="0">
         </div>
       </div>
     `;
 
     document.getElementById('formModalSave').onclick = () => {
       const name = document.getElementById('fi_name').value.trim();
-      const qty  = parseFloat(document.getElementById('fi_qty').value);
+      const qty = parseFloat(document.getElementById('fi_qty').value);
       const unit = document.getElementById('fi_unit').value;
-      const min  = parseFloat(document.getElementById('fi_min').value) || 0;
+      const min = parseFloat(document.getElementById('fi_min').value) || 0;
 
-      if (!name) { alert('Informe o nome do insumo.'); return; }
-      if (isNaN(qty) || qty < 0) { alert('Informe uma quantidade válida.'); return; }
+      if (!name) {
+        alert('Informe o nome do insumo.');
+        return;
+      }
+
+      if (isNaN(qty) || qty < 0) {
+        alert('Informe uma quantidade válida.');
+        return;
+      }
 
       this.items.push({ id: this._nextId++, name, quantity: qty, unit, minStock: min });
       Logger.add('success', 'Insumo Adicionado', `${name} (${qty} ${unit}) cadastrado.`);
@@ -102,47 +119,54 @@ const Inventory = {
   },
 
   openEditForm(id) {
-    const item = this.items.find(i => i.id === id);
+    const item = this.items.find(entry => entry.id === id);
     if (!item) return;
 
     document.getElementById('formModalTitle').textContent = 'Editar Insumo';
     document.getElementById('formModalBody').innerHTML = `
-      <div style="display:flex;flex-direction:column;gap:.75rem">
-        <div>
-          <label style="font-size:.85rem;font-weight:600;color:var(--text-metal)">Nome do Insumo</label>
-          <input id="fi_name" type="text" value="${item.name}"
-            style="width:100%;margin-top:.35rem;padding:.55rem .75rem;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:.9rem;font-family:var(--font-main)">
+      <div class="form-grid">
+        <div class="form-field">
+          <label class="form-label">Nome do Insumo</label>
+          <input id="fi_name" class="form-input" type="text" value="${item.name}">
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
-          <div>
-            <label style="font-size:.85rem;font-weight:600;color:var(--text-metal)">Quantidade</label>
-            <input id="fi_qty" type="number" min="0" value="${item.quantity}"
-              style="width:100%;margin-top:.35rem;padding:.55rem .75rem;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:.9rem;font-family:var(--font-main)">
+        <div class="form-row-2">
+          <div class="form-field">
+            <label class="form-label">Quantidade</label>
+            <input id="fi_qty" class="form-input" type="number" min="0" value="${item.quantity}">
           </div>
-          <div>
-            <label style="font-size:.85rem;font-weight:600;color:var(--text-metal)">Unidade</label>
-            <input id="fi_unit" type="text" value="${item.unit}"
-              style="width:100%;margin-top:.35rem;padding:.55rem .75rem;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:.9rem;font-family:var(--font-main)">
+          <div class="form-field">
+            <label class="form-label">Unidade</label>
+            <input id="fi_unit" class="form-input" type="text" value="${item.unit}">
           </div>
         </div>
-        <div>
-          <label style="font-size:.85rem;font-weight:600;color:var(--text-metal)">Estoque Mínimo</label>
-          <input id="fi_min" type="number" min="0" value="${item.minStock}"
-            style="width:100%;margin-top:.35rem;padding:.55rem .75rem;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:.9rem;font-family:var(--font-main)">
+        <div class="form-field">
+          <label class="form-label">Estoque Mínimo</label>
+          <input id="fi_min" class="form-input" type="number" min="0" value="${item.minStock}">
         </div>
       </div>
     `;
 
     document.getElementById('formModalSave').onclick = () => {
       const name = document.getElementById('fi_name').value.trim();
-      const qty  = parseFloat(document.getElementById('fi_qty').value);
+      const qty = parseFloat(document.getElementById('fi_qty').value);
       const unit = document.getElementById('fi_unit').value.trim() || item.unit;
-      const min  = parseFloat(document.getElementById('fi_min').value) || 0;
+      const min = parseFloat(document.getElementById('fi_min').value) || 0;
 
-      if (!name) { alert('Informe o nome.'); return; }
-      if (isNaN(qty) || qty < 0) { alert('Informe uma quantidade válida.'); return; }
+      if (!name) {
+        alert('Informe o nome.');
+        return;
+      }
 
-      item.name = name; item.quantity = qty; item.unit = unit; item.minStock = min;
+      if (isNaN(qty) || qty < 0) {
+        alert('Informe uma quantidade válida.');
+        return;
+      }
+
+      item.name = name;
+      item.quantity = qty;
+      item.unit = unit;
+      item.minStock = min;
+
       Logger.add('info', 'Insumo Atualizado', `${name} atualizado para ${qty} ${unit}.`);
       closeFormModal();
       this.render();
@@ -152,10 +176,11 @@ const Inventory = {
   },
 
   remove(id) {
-    const item = this.items.find(i => i.id === id);
+    const item = this.items.find(entry => entry.id === id);
     if (!item) return;
     if (!confirm(`Remover "${item.name}"?`)) return;
-    this.items = this.items.filter(i => i.id !== id);
+
+    this.items = this.items.filter(entry => entry.id !== id);
     Logger.add('warning', 'Insumo Removido', `${item.name} removido do estoque.`);
     this.render();
   },

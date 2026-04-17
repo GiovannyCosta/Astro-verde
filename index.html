@@ -6,13 +6,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Astro Verde | Fazenda Vertical</title>
 
+  <!-- Fontes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+  <!-- Ícones -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <!-- Gráficos -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <!-- Estilos do projeto — separados por responsabilidade -->
   <link rel="stylesheet" href="assets/css/variables.css">
   <link rel="stylesheet" href="assets/css/base.css">
   <link rel="stylesheet" href="assets/css/layout.css">
@@ -22,27 +27,30 @@
 
 <body>
 
-  <!-- SIDEBAR -->
+  <!-- ============================================================
+       SIDEBAR — navegação lateral
+  ============================================================ -->
   <aside class="sidebar">
+
     <div class="brand">
       <img src="./ASTRO.png" alt="Logo Astro Verde">
       <span>Astro Verde</span>
     </div>
 
     <nav class="nav-menu">
-      <a class="nav-item active" href="javascript:void(0)" onclick="switchTab('dashboard', this)">
+      <a class="nav-item active" href="#dashboard" data-tab="dashboard">
         <i class="ph ph-squares-four"></i>
         <span>Dashboard</span>
       </a>
-      <a class="nav-item" href="javascript:void(0)" onclick="switchTab('estoque', this)">
+      <a class="nav-item" href="#estoque" data-tab="estoque">
         <i class="ph ph-package"></i>
         <span>Insumos (RF11)</span>
       </a>
-      <a class="nav-item" href="javascript:void(0)" onclick="switchTab('safras', this)">
+      <a class="nav-item" href="#safras" data-tab="safras">
         <i class="ph ph-plant"></i>
         <span>Safras (RF05)</span>
       </a>
-      <a class="nav-item" href="javascript:void(0)" onclick="switchTab('log', this)">
+      <a class="nav-item" href="#log" data-tab="log">
         <i class="ph ph-clock"></i>
         <span>Log</span>
       </a>
@@ -60,12 +68,16 @@
         </div>
       </div>
     </div>
+
   </aside>
 
 
-  <!-- MAIN -->
+  <!-- ============================================================
+       CONTEÚDO PRINCIPAL
+  ============================================================ -->
   <main class="main-wrapper">
 
+    <!-- Topbar -->
     <header class="topbar">
       <h2 class="page-title" id="pageTitle">Visão Geral — Monitoramento Contínuo</h2>
       <div class="topbar-actions">
@@ -73,88 +85,110 @@
           <div class="pulse"></div>
           <span id="sysStatusText">Modo Mock Ativo</span>
         </div>
-        <button class="btn-icon" onclick="showNotificationModal()" title="Notificações">
+        <button class="btn-icon" type="button" data-ui-action="show-notifications" title="Notificações">
           <i class="ph ph-bell"></i>
-          <span class="badge" id="notifBadge" style="display:none;">0</span>
+          <span class="badge hidden" id="notifBadge">0</span>
         </button>
         <div class="user-avatar" title="Operador">OP</div>
       </div>
     </header>
 
-
+    <!-- Área de conteúdo rolável -->
     <div class="content-area">
 
-      <!-- ===== DASHBOARD ===== -->
+
+      <!-- ===== VIEW: DASHBOARD ===== -->
       <section id="dashboard" class="view-section active">
 
+        <!-- Banner de alertas ativos (preenchido por Alerts.render()) -->
         <div class="alerts-banner" id="alertsBanner"></div>
 
+        <!-- KPIs -->
         <div class="kpi-grid">
 
-          <!-- Reservatório -->
           <div class="card">
-            <div class="kpi-header">Nível do Reservatório <i class="ph ph-drop"></i></div>
+            <div class="kpi-header">
+              Nível do Reservatório
+              <i class="ph ph-drop"></i>
+            </div>
             <div class="kpi-value" id="waterLevel">88%</div>
             <div class="kpi-sub">Eficiência Hídrica: <span class="status-ok">99%</span></div>
           </div>
 
-          <!-- pH (RF08) -->
           <div class="card" id="cardPh">
-            <div class="kpi-header">Nível de pH <i class="ph ph-flask"></i></div>
+            <div class="kpi-header">
+              Nível de pH
+              <i class="ph ph-flask"></i>
+            </div>
             <div class="kpi-value" id="phValue">6.1</div>
-            <div class="kpi-sub">Status: <span class="status-text status-ok" id="phStatus">Ideal (5.5–6.5)</span></div>
+            <div class="kpi-sub">
+              Status: <span class="status-text status-ok" id="phStatus">Ideal (5.5–6.5)</span>
+            </div>
           </div>
 
-          <!-- EC / TDS -->
           <div class="card" id="cardEc">
-            <div class="kpi-header">Minerais (EC / TDS) <i class="ph ph-atom"></i></div>
+            <div class="kpi-header">
+              Minerais (EC / TDS)
+              <i class="ph ph-atom"></i>
+            </div>
             <div class="kpi-value">
               <span id="ecValue">1.75</span>
-              <span style="font-size:1rem;color:var(--text-muted)"> mS/cm</span>
+              <span class="kpi-unit">mS/cm</span>
             </div>
             <div class="kpi-sub">TDS: <span id="tdsValue">875</span> ppm</div>
           </div>
 
-          <!-- Temperatura (RF03) -->
           <div class="card" id="cardTemp">
-            <div class="kpi-header">Temperatura Ambiente <i class="ph ph-thermometer"></i></div>
+            <div class="kpi-header">
+              Temperatura Ambiente
+              <i class="ph ph-thermometer"></i>
+            </div>
             <div class="kpi-value" id="tempValue">23.0°C</div>
-            <div class="kpi-sub">Status: <span class="status-text status-ok" id="tempStatus">Ideal (18–26°C)</span></div>
+            <div class="kpi-sub">
+              Status: <span class="status-text status-ok" id="tempStatus">Ideal (18–26°C)</span>
+            </div>
           </div>
 
-          <!-- Fluxo NFT (RF07) -->
           <div class="card">
-            <div class="kpi-header">Fluxo Laminar (NFT) <i class="ph ph-waves"></i></div>
-            <div class="kpi-value" style="font-size:1.4rem;margin-top:.5rem" id="nftStatusVal">Circulando</div>
-            <div class="kpi-sub" style="margin-top:.5rem" id="nftStatusSub">
+            <div class="kpi-header">
+              Fluxo Laminar (NFT)
+              <i class="ph ph-waves"></i>
+            </div>
+            <div class="kpi-value kpi-value-md" id="nftStatusVal">Circulando</div>
+            <div class="kpi-sub kpi-sub-spaced" id="nftStatusSub">
               Bomba Principal: <span class="status-ok">Ligada</span>
             </div>
           </div>
 
-          <!-- Iluminação (RF02) -->
           <div class="card lighting-card" id="cardLighting">
-            <div class="kpi-header">Iluminação LED 6000K <i class="ph ph-sun-dim"></i></div>
-            <div id="lightingState"><span class="light-state on">💡 Acesa</span></div>
+            <div class="kpi-header">
+              Iluminação LED 6000K
+              <i class="ph ph-sun-dim"></i>
+            </div>
+            <div id="lightingState">
+              <span class="light-state on">💡 Acesa</span>
+            </div>
             <div class="kpi-sub" id="lightingSub">Potência: 100% | Ciclo: 16h/8h</div>
           </div>
 
         </div><!-- /kpi-grid -->
 
 
+        <!-- Grid: gráfico + controles -->
         <div class="dashboard-grid">
 
-          <!-- Gráfico histórico -->
           <div class="panel">
             <div class="panel-title">
               Histórico Ambiental (Temp / Umidade)
-              <button class="btn btn-primary" onclick="downloadCSV()">
+              <button class="btn btn-primary" type="button" data-ui-action="download-csv">
                 <i class="ph ph-download-simple"></i> Exportar (RF10)
               </button>
             </div>
-            <div class="chart-container"><canvas id="envChart"></canvas></div>
+            <div class="chart-container">
+              <canvas id="envChart"></canvas>
+            </div>
           </div>
 
-          <!-- Controles + atuadores -->
           <div class="panel">
             <div class="panel-title">Controle e Ajustes</div>
             <div class="list-group">
@@ -164,7 +198,7 @@
                   <h4>Ajuste de pH (CU OPE 01)</h4>
                   <p>Acionar bomba dosadora manualmente</p>
                 </div>
-                <button class="btn btn-action" onclick="corrigirPh()">Injetar</button>
+                <button class="btn btn-action" type="button" data-ui-action="correct-ph">Injetar</button>
               </div>
 
               <div class="list-item">
@@ -172,7 +206,7 @@
                   <h4>Simular Falha NFT (RF07)</h4>
                   <p>Testar alerta crítico do fluxo</p>
                 </div>
-                <button class="btn btn-danger" onclick="simularFalhaNFT()">Simular</button>
+                <button class="btn btn-danger" type="button" data-ui-action="simulate-nft-failure">Simular</button>
               </div>
 
               <div class="list-item">
@@ -180,16 +214,22 @@
                   <h4>Simular Lâmpada Queimada (RF02)</h4>
                   <p>Testar detecção de falha luminosa</p>
                 </div>
-                <button class="btn btn-warning" onclick="simularQueimada()">Simular</button>
+                <button class="btn btn-warning" type="button" data-ui-action="simulate-light-burn">Simular</button>
               </div>
 
               <div class="list-item">
-                <div class="item-info"><h4>Resfriamento</h4><p>Controle térmico superior</p></div>
+                <div class="item-info">
+                  <h4>Resfriamento</h4>
+                  <p>Controle térmico superior</p>
+                </div>
                 <span class="status-text status-danger" id="coolingStatus">Inativo</span>
               </div>
 
               <div class="list-item">
-                <div class="item-info"><h4>Aquecimento</h4><p>Controle térmico inferior</p></div>
+                <div class="item-info">
+                  <h4>Aquecimento</h4>
+                  <p>Controle térmico inferior</p>
+                </div>
                 <span class="status-text status-danger" id="heatingStatus">Inativo</span>
               </div>
 
@@ -209,73 +249,84 @@
       </section><!-- /dashboard -->
 
 
-      <!-- ===== INSUMOS (RF11) ===== -->
+      <!-- ===== VIEW: INSUMOS (RF11) ===== -->
       <section id="estoque" class="view-section">
         <div class="panel">
           <div class="panel-title">
             Gestão de Insumos e Nutrientes
-            <button class="btn btn-action" onclick="Inventory.openAddForm()">+ Novo Insumo</button>
+            <button class="btn btn-action" type="button" data-ui-action="inventory-add">+ Novo Insumo</button>
           </div>
           <div id="inventoryList" class="list-group"></div>
         </div>
       </section>
 
 
-      <!-- ===== SAFRAS (RF04/RF05) ===== -->
+      <!-- ===== VIEW: SAFRAS (RF04/RF05) ===== -->
       <section id="safras" class="view-section">
         <div class="panel">
           <div class="panel-title">
             Planejamento de Colheita
-            <button class="btn btn-action" onclick="Harvest.openAddForm()">+ Nova Safra</button>
+            <button class="btn btn-action" type="button" data-ui-action="harvest-add">+ Nova Safra</button>
           </div>
           <div id="harvestList" class="list-group"></div>
         </div>
       </section>
 
 
-      <!-- ===== LOG ===== -->
+      <!-- ===== VIEW: LOG ===== -->
       <section id="log" class="view-section">
+
         <div class="panel">
           <div class="panel-title">Status dos Módulos Físicos</div>
           <div id="moduleStatus" class="list-group"></div>
         </div>
+
         <div class="panel">
           <div class="panel-title">
             Log de Eventos
-            <span style="font-size:.8rem;color:var(--text-muted);font-weight:400" id="logCount"></span>
+            <span class="log-count-label" id="logCount"></span>
           </div>
           <div id="logsContainer" class="list-group"></div>
         </div>
+
       </section>
 
+
     </div><!-- /content-area -->
-  </main>
+  </main><!-- /main-wrapper -->
 
 
-  <!-- MODAL PRINCIPAL -->
+  <!-- ============================================================
+       MODAL PRINCIPAL — feedback ao usuário
+  ============================================================ -->
   <div class="modal-overlay" id="customModal">
     <div class="modal-content">
       <i class="ph ph-warning-circle modal-icon warning" id="modalIcon"></i>
       <h3 class="modal-title" id="modalTitle">Atenção</h3>
       <p class="modal-text" id="modalMessage">Mensagem aqui</p>
-      <button class="btn btn-primary" style="width:100%" onclick="closeModal()">Entendido</button>
+      <button class="btn btn-primary btn-full" type="button" data-ui-action="close-modal">Entendido</button>
     </div>
   </div>
 
-  <!-- MODAL DE FORMULÁRIO (Insumos / Safras) -->
+  <!-- ============================================================
+       MODAL DE FORMULÁRIO — cadastro de insumos e safras
+  ============================================================ -->
   <div class="modal-overlay" id="formModal">
-    <div class="modal-content" style="max-width:480px;text-align:left">
-      <h3 class="modal-title" id="formModalTitle" style="margin-bottom:1.25rem"></h3>
+    <div class="modal-content modal-content-form">
+      <h3 class="modal-title form-modal-title" id="formModalTitle"></h3>
       <div id="formModalBody"></div>
-      <div style="display:flex;gap:.75rem;margin-top:1.25rem">
-        <button class="btn btn-action" style="flex:1" id="formModalSave">Salvar</button>
-        <button class="btn btn-primary" style="flex:1" onclick="closeFormModal()">Cancelar</button>
+      <div class="form-actions">
+        <button class="btn btn-action form-btn" type="button" id="formModalSave">Salvar</button>
+        <button class="btn btn-primary form-btn" type="button" data-ui-action="close-form-modal">Cancelar</button>
       </div>
     </div>
   </div>
 
 
-  <!-- SCRIPTS — ordem importa: dependências primeiro, main.js por último -->
+  <!-- ============================================================
+       SCRIPTS — carregados no fim do body
+       Ordem obrigatória: state → alertas → logs → módulos → main
+  ============================================================ -->
   <script src="assets/js/state.js"></script>
   <script src="assets/js/modules/alerts.js"></script>
   <script src="assets/js/modules/logs.js"></script>

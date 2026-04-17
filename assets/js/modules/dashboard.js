@@ -127,11 +127,11 @@ const Dashboard = {
 
     if (AppState.sensors.nftFlow) {
       valEl.textContent = 'Circulando';
-      valEl.style.color = '';
+      valEl.classList.remove('status-danger');
       if (subEl) subEl.innerHTML = 'Bomba Principal: <span class="status-ok">Ligada</span>';
     } else {
       valEl.textContent = 'INTERROMPIDO';
-      valEl.style.color = 'var(--primary-pink)';
+      valEl.classList.add('status-danger');
       if (subEl) subEl.innerHTML = 'Bomba Principal: <span class="status-danger">Falha Crítica</span>';
     }
   },

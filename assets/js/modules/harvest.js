@@ -1,23 +1,39 @@
 /*
- * modules/harvest.js — Planejamento de Safras (RF04/RF05)
+ * modules/harvest.js - Planejamento de Safras (RF04/RF05)
  */
 
 const Harvest = {
 
   items: [
-    { id: 1, crop: 'Alface Crespa', lot: 'Lote 04A', plantedAt: '01/04/2026', harvestAt: '10/05/2026', totalDays: 40, currentDay: 7,  status: 'growing' },
-    { id: 2, crop: 'Manjericão',    lot: 'Lote 02B', plantedAt: '15/03/2026', harvestAt: '25/04/2026', totalDays: 40, currentDay: 24, status: 'final'   },
+    { id: 1, crop: 'Alface Crespa', lot: 'Lote 04A', plantedAt: '01/04/2026', harvestAt: '10/05/2026', totalDays: 40, currentDay: 7, status: 'growing' },
+    { id: 2, crop: 'Manjericão', lot: 'Lote 02B', plantedAt: '15/03/2026', harvestAt: '25/04/2026', totalDays: 40, currentDay: 24, status: 'final' },
   ],
 
   _nextId: 3,
 
-  _statusLabel(status) {
-    const map = {
-      growing: { label: 'Em Andamento', cls: 'status-ok'    },
-      final:   { label: 'Fase Final',   cls: 'status-ok'    },
-      done:    { label: 'Colhida',      cls: 'status-alert'  },
+  init() {
+    const container = document.getElementById('harvestList');
+    if (!container || container.dataset.bound === 'true') return;
+
+    container.dataset.bound = 'true';
+    container.addEventListener('click', event => {
+      const button = event.target.closest('[data-harvest-action]');
+      if (!button) return;
+
+      const itemId = Number(button.dataset.id);
+      if (button.dataset.harvestAction === 'edit') this.openEditForm(itemId);
+      if (button.dataset.harvestAction === 'remove') this.remove(itemId);
+    });
+  },
+
+  statusLabel(status) {
+    const labels = {
+      growing: { label: 'Em Andamento', cls: 'status-ok' },
+      final: { label: 'Fase Final', cls: 'status-ok' },
+      done: { label: 'Colhida', cls: 'status-alert' },
     };
-    return map[status] || { label: status, cls: '' };
+
+    return labels[status] || { label: status, cls: '' };
   },
 
   render() {
@@ -31,27 +47,27 @@ const Harvest = {
 
     container.innerHTML = '';
     this.items.forEach(item => {
-      const { label, cls } = this._statusLabel(item.status);
+      const { label, cls } = this.statusLabel(item.status);
       const progress = Math.round((item.currentDay / item.totalDays) * 100);
       const div = document.createElement('div');
       div.className = 'list-item';
       div.innerHTML = `
-        <div class="item-info" style="flex:1">
-          <h4>${item.crop} — ${item.lot}</h4>
+        <div class="item-info harvest-info">
+          <h4>${item.crop} - ${item.lot}</h4>
           <p>Plantio: ${item.plantedAt} &nbsp;|&nbsp; Colheita prevista: ${item.harvestAt}</p>
-          <div style="margin-top:.5rem;background:#e8ece7;border-radius:6px;height:6px;overflow:hidden">
-            <div style="width:${progress}%;height:100%;background:var(--secondary-green);border-radius:6px;transition:width .4s"></div>
+          <div class="progress-track">
+            <div class="progress-bar"></div>
           </div>
-          <p style="font-size:.75rem;color:var(--text-muted);margin-top:.25rem">Dia ${item.currentDay} de ${item.totalDays} (${progress}%)</p>
+          <p class="progress-label">Dia ${item.currentDay} de ${item.totalDays} (${progress}%)</p>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.5rem;margin-left:1rem;min-width:100px">
-          <span class="status-text ${cls}" style="font-size:.85rem">${label}</span>
-          <button class="btn btn-primary" style="padding:.3rem .7rem;font-size:.8rem"
-            onclick="Harvest.openEditForm(${item.id})">Editar</button>
-          <button class="btn btn-danger" style="padding:.3rem .7rem;font-size:.8rem"
-            onclick="Harvest.remove(${item.id})">Remover</button>
+        <div class="harvest-actions">
+          <span class="status-text harvest-status ${cls}">${label}</span>
+          <button class="btn btn-primary btn-sm" type="button" data-harvest-action="edit" data-id="${item.id}">Editar</button>
+          <button class="btn btn-danger btn-sm" type="button" data-harvest-action="remove" data-id="${item.id}">Remover</button>
         </div>
       `;
+
+      div.querySelector('.progress-bar').style.width = `${progress}%`;
       container.appendChild(div);
     });
   },
@@ -59,52 +75,64 @@ const Harvest = {
   openAddForm() {
     document.getElementById('formModalTitle').textContent = 'Nova Safra';
     document.getElementById('formModalBody').innerHTML = `
-      <div style="display:flex;flex-direction:column;gap:.75rem">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
-          <div>
-            <label style="font-size:.85rem;font-weight:600;color:var(--text-metal)">Cultura</label>
-            <input id="fh_crop" type="text" placeholder="Ex: Alface Crespa"
-              style="width:100%;margin-top:.35rem;padding:.55rem .75rem;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:.9rem;font-family:var(--font-main)">
+      <div class="form-grid">
+        <div class="form-row-2">
+          <div class="form-field">
+            <label class="form-label">Cultura</label>
+            <input id="fh_crop" class="form-input" type="text" placeholder="Ex: Alface Crespa">
           </div>
-          <div>
-            <label style="font-size:.85rem;font-weight:600;color:var(--text-metal)">Lote</label>
-            <input id="fh_lot" type="text" placeholder="Ex: Lote 05A"
-              style="width:100%;margin-top:.35rem;padding:.55rem .75rem;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:.9rem;font-family:var(--font-main)">
+          <div class="form-field">
+            <label class="form-label">Lote</label>
+            <input id="fh_lot" class="form-input" type="text" placeholder="Ex: Lote 05A">
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
-          <div>
-            <label style="font-size:.85rem;font-weight:600;color:var(--text-metal)">Data de Plantio</label>
-            <input id="fh_planted" type="date"
-              style="width:100%;margin-top:.35rem;padding:.55rem .75rem;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:.9rem;font-family:var(--font-main)">
+        <div class="form-row-2">
+          <div class="form-field">
+            <label class="form-label">Data de Plantio</label>
+            <input id="fh_planted" class="form-input" type="date">
           </div>
-          <div>
-            <label style="font-size:.85rem;font-weight:600;color:var(--text-metal)">Previsão de Colheita</label>
-            <input id="fh_harvest" type="date"
-              style="width:100%;margin-top:.35rem;padding:.55rem .75rem;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:.9rem;font-family:var(--font-main)">
+          <div class="form-field">
+            <label class="form-label">Previsão de Colheita</label>
+            <input id="fh_harvest" class="form-input" type="date">
           </div>
         </div>
-        <div>
-          <label style="font-size:.85rem;font-weight:600;color:var(--text-metal)">Duração estimada (dias)</label>
-          <input id="fh_days" type="number" min="1" placeholder="40"
-            style="width:100%;margin-top:.35rem;padding:.55rem .75rem;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:.9rem;font-family:var(--font-main)">
+        <div class="form-field">
+          <label class="form-label">Duração estimada (dias)</label>
+          <input id="fh_days" class="form-input" type="number" min="1" placeholder="40">
         </div>
       </div>
     `;
 
     document.getElementById('formModalSave').onclick = () => {
-      const crop    = document.getElementById('fh_crop').value.trim();
-      const lot     = document.getElementById('fh_lot').value.trim();
+      const crop = document.getElementById('fh_crop').value.trim();
+      const lot = document.getElementById('fh_lot').value.trim();
       const planted = document.getElementById('fh_planted').value;
       const harvest = document.getElementById('fh_harvest').value;
-      const days    = parseInt(document.getElementById('fh_days').value) || 40;
+      const days = parseInt(document.getElementById('fh_days').value, 10) || 40;
 
-      if (!crop || !lot) { alert('Informe a cultura e o lote.'); return; }
-      if (!planted || !harvest) { alert('Informe as datas.'); return; }
+      if (!crop || !lot) {
+        alert('Informe a cultura e o lote.');
+        return;
+      }
 
-      const fmt = d => d.split('-').reverse().join('/');
-      this.items.push({ id: this._nextId++, crop, lot, plantedAt: fmt(planted), harvestAt: fmt(harvest), totalDays: days, currentDay: 0, status: 'growing' });
-      Logger.add('success', 'Safra Cadastrada', `${crop} — ${lot} iniciada.`);
+      if (!planted || !harvest) {
+        alert('Informe as datas.');
+        return;
+      }
+
+      const formatDate = value => value.split('-').reverse().join('/');
+      this.items.push({
+        id: this._nextId++,
+        crop,
+        lot,
+        plantedAt: formatDate(planted),
+        harvestAt: formatDate(harvest),
+        totalDays: days,
+        currentDay: 0,
+        status: 'growing',
+      });
+
+      Logger.add('success', 'Safra Cadastrada', `${crop} - ${lot} iniciada.`);
       closeFormModal();
       this.render();
     };
@@ -113,47 +141,44 @@ const Harvest = {
   },
 
   openEditForm(id) {
-    const item = this.items.find(i => i.id === id);
+    const item = this.items.find(entry => entry.id === id);
     if (!item) return;
 
     document.getElementById('formModalTitle').textContent = 'Editar Safra';
     document.getElementById('formModalBody').innerHTML = `
-      <div style="display:flex;flex-direction:column;gap:.75rem">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
-          <div>
-            <label style="font-size:.85rem;font-weight:600;color:var(--text-metal)">Cultura</label>
-            <input id="fh_crop" type="text" value="${item.crop}"
-              style="width:100%;margin-top:.35rem;padding:.55rem .75rem;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:.9rem;font-family:var(--font-main)">
+      <div class="form-grid">
+        <div class="form-row-2">
+          <div class="form-field">
+            <label class="form-label">Cultura</label>
+            <input id="fh_crop" class="form-input" type="text" value="${item.crop}">
           </div>
-          <div>
-            <label style="font-size:.85rem;font-weight:600;color:var(--text-metal)">Lote</label>
-            <input id="fh_lot" type="text" value="${item.lot}"
-              style="width:100%;margin-top:.35rem;padding:.55rem .75rem;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:.9rem;font-family:var(--font-main)">
+          <div class="form-field">
+            <label class="form-label">Lote</label>
+            <input id="fh_lot" class="form-input" type="text" value="${item.lot}">
           </div>
         </div>
-        <div>
-          <label style="font-size:.85rem;font-weight:600;color:var(--text-metal)">Dia atual do ciclo</label>
-          <input id="fh_curday" type="number" min="0" max="${item.totalDays}" value="${item.currentDay}"
-            style="width:100%;margin-top:.35rem;padding:.55rem .75rem;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:.9rem;font-family:var(--font-main)">
+        <div class="form-field">
+          <label class="form-label">Dia atual do ciclo</label>
+          <input id="fh_curday" class="form-input" type="number" min="0" max="${item.totalDays}" value="${item.currentDay}">
         </div>
-        <div>
-          <label style="font-size:.85rem;font-weight:600;color:var(--text-metal)">Status</label>
-          <select id="fh_status"
-            style="width:100%;margin-top:.35rem;padding:.55rem .75rem;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:.9rem;font-family:var(--font-main)">
-            <option value="growing" ${item.status==='growing'?'selected':''}>Em Andamento</option>
-            <option value="final"   ${item.status==='final'?'selected':''}>Fase Final</option>
-            <option value="done"    ${item.status==='done'?'selected':''}>Colhida</option>
+        <div class="form-field">
+          <label class="form-label">Status</label>
+          <select id="fh_status" class="form-select">
+            <option value="growing" ${item.status === 'growing' ? 'selected' : ''}>Em Andamento</option>
+            <option value="final" ${item.status === 'final' ? 'selected' : ''}>Fase Final</option>
+            <option value="done" ${item.status === 'done' ? 'selected' : ''}>Colhida</option>
           </select>
         </div>
       </div>
     `;
 
     document.getElementById('formModalSave').onclick = () => {
-      item.crop       = document.getElementById('fh_crop').value.trim() || item.crop;
-      item.lot        = document.getElementById('fh_lot').value.trim() || item.lot;
-      item.currentDay = parseInt(document.getElementById('fh_curday').value) || item.currentDay;
-      item.status     = document.getElementById('fh_status').value;
-      Logger.add('info', 'Safra Atualizada', `${item.crop} — ${item.lot} atualizado.`);
+      item.crop = document.getElementById('fh_crop').value.trim() || item.crop;
+      item.lot = document.getElementById('fh_lot').value.trim() || item.lot;
+      item.currentDay = parseInt(document.getElementById('fh_curday').value, 10) || item.currentDay;
+      item.status = document.getElementById('fh_status').value;
+
+      Logger.add('info', 'Safra Atualizada', `${item.crop} - ${item.lot} atualizada.`);
       closeFormModal();
       this.render();
     };
@@ -162,11 +187,12 @@ const Harvest = {
   },
 
   remove(id) {
-    const item = this.items.find(i => i.id === id);
+    const item = this.items.find(entry => entry.id === id);
     if (!item) return;
-    if (!confirm(`Remover safra "${item.crop} — ${item.lot}"?`)) return;
-    this.items = this.items.filter(i => i.id !== id);
-    Logger.add('warning', 'Safra Removida', `${item.crop} — ${item.lot} removida.`);
+    if (!confirm(`Remover safra "${item.crop} - ${item.lot}"?`)) return;
+
+    this.items = this.items.filter(entry => entry.id !== id);
+    Logger.add('warning', 'Safra Removida', `${item.crop} - ${item.lot} removida.`);
     this.render();
   },
 };

@@ -201,9 +201,9 @@ const Alerts = {
     if (!badge) return;
     if (AppState.unreadNotifications > 0) {
       badge.textContent = AppState.unreadNotifications;
-      badge.style.display = 'flex';
+      badge.classList.remove('hidden');
     } else {
-      badge.style.display = 'none';
+      badge.classList.add('hidden');
     }
   },
 

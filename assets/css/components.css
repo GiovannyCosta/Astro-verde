@@ -318,9 +318,24 @@
    CONTAINER DE GRÁFICO
    ============================================================ */
 
-/* Wrapper com altura fixa para o Chart.js */
 .chart-container {
   position: relative;
   height: 300px;
   width: 100%;
+}
+
+/* ============================================================
+   INPUTS DENTRO DE MODAIS
+   ============================================================ */
+
+/* Foco visível nos inputs do formulário */
+#formModalBody input:focus,
+#formModalBody select:focus {
+  outline: 2px solid var(--secondary-green);
+  border-color: var(--secondary-green) !important;
+}
+
+/* Badge de notificação — oculto por padrão, aparece quando há alertas */
+#notifBadge {
+  display: none;
 }

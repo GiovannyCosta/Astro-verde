@@ -1,0 +1,89 @@
+/*
+ * variables.css — Tokens de Design do Astro Verde
+ *
+ * Aqui ficam todas as variáveis CSS (custom properties) do sistema.
+ * Centralizar aqui facilita manutenção: mudar uma cor ou tamanho
+ * afeta o projeto inteiro sem precisar buscar em vários arquivos.
+ *
+ * Convenção de nomenclatura:
+ *   --bg-*       → cores de fundo
+ *   --text-*     → cores de texto
+ *   --*-green    → verde da marca Astro Verde
+ *   --*-pink     → rosa/vermelho para alertas e erros
+ */
+
+:root {
+  /* ============================================================
+     FUNDOS (backgrounds)
+     ============================================================ */
+
+  /* Fundo principal da aplicação (cinza esverdeado suave) */
+  --bg-app: #e8ece7;
+
+  /* Fundo escuro principal — usado na sidebar */
+  --bg-ink-black: #091016;
+
+  /* Fundo claro — usado na topbar e elementos secundários */
+  --bg-white: #f0f4ef;
+
+  /* Fundo dos cards e painéis */
+  --card-bg: #ffffff;
+
+  /* Fundo do hover na sidebar */
+  --hover-bg: #04080b;
+
+  /* ============================================================
+     TEXTOS
+     ============================================================ */
+
+  /* Texto escuro padrão */
+  --text-black: #08090a;
+
+  /* Texto claro — para fundos escuros */
+  --text-white: #f0f4ef;
+
+  /* Texto metálico — títulos e rótulos de média ênfase */
+  --text-metal: #343a40;
+
+  /* Texto apagado — informações secundárias, labels */
+  --text-muted: #6c757d;
+
+  /* ============================================================
+     CORES DE ESTADO E ALERTA
+     ============================================================ */
+
+  /* Verde Astro Verde — sucesso, operação normal, destaque da marca */
+  --secondary-green: #98ce00;
+
+  /* Rosa/vermelho — erros críticos, falhas, perigo */
+  --primary-pink: #fc6471;
+
+  /* Amarelo — avisos, atenção, estoque baixo */
+  --warning-yellow: #f5b700;
+
+  /* ============================================================
+     BORDAS E TRANSPARÊNCIAS
+     ============================================================ */
+
+  /* Borda sutil para separar elementos em fundo escuro */
+  --border-translucent: rgba(255, 255, 255, 0.1);
+
+  /* Borda sutil para elementos em fundo claro */
+  --border-glow: rgba(120, 111, 172, 0.1);
+
+  /* ============================================================
+     LAYOUT E TIPOGRAFIA
+     ============================================================ */
+
+  /* Pilha de fontes — Inter como principal */
+  --font-main: "Inter", "Roboto", Arial, sans-serif;
+
+  /* Largura máxima do conteúdo principal */
+  --max-width: 1400px;
+
+  /* Altura do cabeçalho (topbar) e da marca (sidebar) */
+  --header-height: 80px;
+
+  /* Largura da sidebar lateral */
+  --sidebar-width: 260px;
+}

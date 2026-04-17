@@ -1,0 +1,67 @@
+/*
+ * base.css — Reset e Estilos Fundamentais
+ *
+ * Define comportamentos base do navegador:
+ * reset de margens/paddings, box-sizing universal,
+ * tipografia e animações globais reutilizáveis.
+ */
+
+/* --- Reset Universal ---
+   Remove margens e paddings padrão do navegador.
+   box-sizing: border-box faz padding e border não
+   aumentarem o tamanho declarado do elemento. */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: var(--font-main);
+}
+
+/* --- Corpo da Aplicação ---
+   display: flex coloca sidebar e main-wrapper lado a lado.
+   overflow: hidden impede rolagem no body, deixando apenas
+   o content-area rolar internamente. */
+body {
+  background-color: var(--bg-app);
+  color: var(--text-black);
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* --- Animação de Entrada de Seção ---
+   Usada em .view-section.active para transição suave entre abas. */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Animação de Pulso (indicador de sistema ativo) ---
+   O efeito de "batimento" no ponto verde da topbar. */
+@keyframes pulsing {
+  0%   { box-shadow: 0 0 0 0   rgba(152, 206, 0, 0.7); }
+  70%  { box-shadow: 0 0 0 6px rgba(152, 206, 0, 0);   }
+  100% { box-shadow: 0 0 0 0   rgba(152, 206, 0, 0);   }
+}
+
+/* --- Links sem estilo padrão ---
+   Elementos <a> usados como botões de navegação não devem
+   ter sublinhado nem cor azul padrão do navegador. */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* --- Responsividade Mobile ---
+   Em telas pequenas a sidebar vira barra horizontal no topo. */
+@media (max-width: 768px) {
+  body {
+    flex-direction: column;
+  }
+}

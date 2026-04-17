@@ -1,0 +1,161 @@
+/*
+ * dashboard.css — Estilos Específicos do Dashboard
+ *
+ * Complementa os componentes genéricos com layouts
+ * exclusivos da tela de monitoramento (dashboard principal):
+ * - Grid do dashboard (gráfico + controles)
+ * - Cards de temperatura e luminosidade
+ * - Indicadores de estado dos atuadores
+ */
+
+/* ============================================================
+   GRID DO DASHBOARD — divide em gráfico (2/3) e controles (1/3)
+   ============================================================ */
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Em telas menores, empilha as colunas */
+@media (max-width: 992px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   CARDS DE ATUADORES — estado visual de temperatura e luz
+   ============================================================ */
+
+/* Card do estado da iluminação */
+.lighting-card .kpi-value {
+  font-size: 1.4rem;
+}
+
+/* Indicador de estado de iluminação */
+.light-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.2rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+/* Acesa — fundo verde claro */
+.light-state.on {
+  background: #e1f0c4;
+  color: #3f5e00;
+}
+
+/* Apagada — fundo cinza */
+.light-state.off {
+  background: #f0f0f0;
+  color: #6c757d;
+}
+
+/* Queimada — fundo vermelho claro */
+.light-state.burned {
+  background: #fde8ea;
+  color: #c0392b;
+}
+
+/* ============================================================
+   SEÇÃO DE ALERTAS ATIVOS — acima dos KPIs quando há alertas
+   ============================================================ */
+
+.alerts-banner {
+  margin-bottom: 1.5rem;
+}
+
+/* Item de alerta individual */
+.alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.alert-item i {
+  font-size: 1.25rem;
+  margin-top: 0.1rem;
+  flex-shrink: 0;
+}
+
+/* Alerta informativo — azul suave */
+.alert-item.info {
+  background: #e8f4fd;
+  color: #0c5460;
+  border-left: 4px solid #17a2b8;
+}
+
+/* Alerta de aviso — amarelo */
+.alert-item.warning {
+  background: #fef0c7;
+  color: #856404;
+  border-left: 4px solid var(--warning-yellow);
+}
+
+/* Alerta crítico — vermelho */
+.alert-item.critical {
+  background: #fde8ea;
+  color: #842029;
+  border-left: 4px solid var(--primary-pink);
+}
+
+.alert-item .alert-time {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin-top: 0.25rem;
+}
+
+/* ============================================================
+   CONTROLES RÁPIDOS — panel com ações manuais
+   ============================================================ */
+
+/* Destaque escuro para o item de ajuste de pH */
+.control-item-highlight {
+  background: var(--bg-ink-black) !important;
+  color: var(--text-white);
+}
+
+.control-item-highlight h4 {
+  color: var(--text-white) !important;
+}
+
+.control-item-highlight p {
+  color: #aaa !important;
+}
+
+/* ============================================================
+   LOG DE ENTRADAS — na aba de Logs
+   ============================================================ */
+
+/* Coloração do timestamp */
+.log-timestamp {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Badge de tipo do log */
+.log-type-badge {
+  padding: 0.25rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.log-type-badge.info     { background: #e8f4fd; color: #0c5460; }
+.log-type-badge.warning  { background: #fef0c7; color: #856404; }
+.log-type-badge.critical { background: #fde8ea; color: #842029; }
+.log-type-badge.success  { background: #e1f0c4; color: #3f5e00; }

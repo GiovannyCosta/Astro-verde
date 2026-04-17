@@ -1,0 +1,326 @@
+/*
+ * components.css — Componentes Reutilizáveis da UI
+ *
+ * Contém os blocos visuais que aparecem em várias partes da app:
+ * - Cards (KPI cards)
+ * - Painéis (panels com título e conteúdo)
+ * - Listas e list items
+ * - Badges de status
+ * - Botões
+ * - Modal customizado
+ * - Textos de status (ok, alerta, perigo)
+ */
+
+/* ============================================================
+   CARDS KPI — indicadores principais no topo do dashboard
+   ============================================================ */
+
+/* Grid responsivo de cards — mínimo 240px por coluna */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Card base — fundo branco com sombra sutil */
+.card {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Barra colorida à esquerda do card — indica estado */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background-color: var(--secondary-green); /* normal: verde */
+}
+
+/* Estado de atenção — barra amarela */
+.card.warning::before {
+  background-color: var(--warning-yellow);
+}
+
+/* Estado crítico — barra vermelha */
+.card.danger::before {
+  background-color: var(--primary-pink);
+}
+
+/* Cabeçalho do card — rótulo e ícone */
+.kpi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.kpi-header i {
+  font-size: 1.5rem;
+  color: var(--text-metal);
+}
+
+/* Valor principal do KPI — grande e em destaque */
+.kpi-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-black);
+  margin-bottom: 0.25rem;
+}
+
+/* Texto secundário do KPI */
+.kpi-sub {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   TEXTOS DE STATUS
+   ============================================================ */
+
+.status-text  { font-weight: 600; }
+.status-ok    { color: var(--secondary-green); }
+.status-alert { color: var(--warning-yellow); }
+.status-danger { color: var(--primary-pink); }
+
+/* ============================================================
+   PAINÉIS — containers de seção com título
+   ============================================================ */
+
+.panel {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+}
+
+/* Título do painel com espaço para botão de ação à direita */
+.panel-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+  color: var(--text-black);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ============================================================
+   LISTAS
+   ============================================================ */
+
+/* Container vertical de list items */
+.list-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Item de lista — linha com info à esquerda e status à direita */
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background-color: var(--bg-white);
+  border-radius: 8px;
+  border: 1px solid var(--border-glow);
+}
+
+/* Texto principal do item */
+.item-info h4 {
+  font-size: 0.95rem;
+  color: var(--text-black);
+  margin-bottom: 0.2rem;
+}
+
+/* Texto secundário do item */
+.item-info p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   BADGES DE STATUS — pill colorido
+   ============================================================ */
+
+.badge-status {
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Verde — operação normal */
+.badge-status.active {
+  background: #e1f0c4;
+  color: #3f5e00;
+}
+
+/* Amarelo — atenção */
+.badge-status.warning {
+  background: #fef0c7;
+  color: #b54708;
+}
+
+/* Vermelho — crítico */
+.badge-status.danger {
+  background: #fde8ea;
+  color: #c0392b;
+}
+
+/* Cinza — inativo */
+.badge-status.inactive {
+  background: #f0f0f0;
+  color: #6c757d;
+}
+
+/* ============================================================
+   BOTÕES
+   ============================================================ */
+
+/* Base de todos os botões */
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Botão primário — escuro, para ações principais */
+.btn-primary {
+  background-color: var(--bg-ink-black);
+  color: var(--text-white);
+}
+
+.btn-primary:hover {
+  background-color: var(--hover-bg);
+}
+
+/* Botão de ação — verde, para confirmar operações */
+.btn-action {
+  background-color: var(--secondary-green);
+  color: var(--bg-ink-black);
+  font-weight: 600;
+}
+
+.btn-action:hover {
+  filter: brightness(0.9);
+}
+
+/* Botão de perigo — rosa/vermelho, para simulações de falha */
+.btn-danger {
+  background-color: var(--primary-pink);
+  color: #fff;
+}
+
+.btn-danger:hover {
+  filter: brightness(0.9);
+}
+
+/* Botão de aviso */
+.btn-warning {
+  background-color: var(--warning-yellow);
+  color: var(--bg-ink-black);
+  font-weight: 600;
+}
+
+/* ============================================================
+   MODAL CUSTOMIZADO — substitui alert() nativo do browser
+   ============================================================ */
+
+/* Overlay escuro que cobre toda a tela */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(9, 16, 22, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;  /* invisível e não clicável quando fechado */
+  transition: opacity 0.3s;
+}
+
+/* Mostra o overlay com fade-in */
+.modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Caixa de conteúdo do modal */
+.modal-content {
+  background: var(--card-bg);
+  width: 90%;
+  max-width: 400px;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  transform: translateY(-20px);  /* começa ligeiramente acima */
+  transition: transform 0.3s;
+}
+
+/* Desliza para baixo ao aparecer */
+.modal-overlay.show .modal-content {
+  transform: translateY(0);
+}
+
+/* Ícone do modal — grande e colorido */
+.modal-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.modal-icon.warning { color: var(--warning-yellow); }
+.modal-icon.success { color: var(--secondary-green); }
+.modal-icon.danger  { color: var(--primary-pink); }
+
+.modal-title {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-black);
+}
+
+.modal-text {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   CONTAINER DE GRÁFICO
+   ============================================================ */
+
+/* Wrapper com altura fixa para o Chart.js */
+.chart-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
+}

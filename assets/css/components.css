@@ -118,6 +118,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 /* ============================================================
@@ -136,6 +138,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
   padding: 1rem;
   background-color: var(--bg-white);
   border-radius: 8px;
@@ -146,17 +149,23 @@
   border-left: 4px solid var(--warning-yellow);
 }
 
+.item-info {
+  min-width: 0;
+}
+
 /* Texto principal do item */
 .item-info h4 {
   font-size: 0.95rem;
   color: var(--text-black);
   margin-bottom: 0.2rem;
+  overflow-wrap: anywhere;
 }
 
 /* Texto secundário do item */
 .item-info p {
   font-size: 0.8rem;
   color: var(--text-muted);
+  overflow-wrap: anywhere;
 }
 
 /* ============================================================
@@ -169,6 +178,7 @@
   font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
+  text-align: center;
 }
 
 /* Verde — operação normal */
@@ -210,6 +220,7 @@
   font-size: 0.875rem;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
 }
 
@@ -412,4 +423,101 @@
 /* Badge de notificação — oculto por padrão */
 #notifBadge {
   display: none;
+}
+
+@media (max-width: 768px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .card,
+  .panel {
+    padding: 1.15rem;
+  }
+
+  .kpi-header {
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .kpi-header i {
+    font-size: 1.25rem;
+  }
+
+  .kpi-value {
+    font-size: 1.75rem;
+    line-height: 1.1;
+  }
+
+  .panel-title {
+    font-size: 1rem;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .panel-title .btn {
+    width: 100%;
+  }
+
+  .list-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .badge-status {
+    white-space: normal;
+  }
+
+  .btn {
+    min-height: 44px;
+  }
+
+  .chart-container {
+    height: 240px;
+  }
+
+  .modal-overlay {
+    padding: 1rem;
+    align-items: flex-end;
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: none;
+    max-height: min(80dvh, 720px);
+    padding: 1.25rem;
+    overflow-y: auto;
+    border-radius: 18px 18px 12px 12px;
+  }
+
+  .modal-content-form {
+    max-width: none;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+}
+
+@media (max-width: 480px) {
+  .card,
+  .panel,
+  .modal-content {
+    padding: 1rem;
+  }
+
+  .kpi-value {
+    font-size: 1.55rem;
+  }
+
+  .kpi-value-md {
+    font-size: 1.2rem;
+  }
+
+  .chart-container {
+    height: 220px;
+  }
 }

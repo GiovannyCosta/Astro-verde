@@ -39,6 +39,7 @@ const Charts = {
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
 
     // Dados iniciais: últimas 7 horas simuladas
     const labels = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', 'Agora'];
@@ -57,7 +58,7 @@ const Charts = {
             backgroundColor: 'rgba(152, 206, 0, 0.1)',
             tension: 0.4,
             fill: true,
-            pointRadius: 3,
+            pointRadius: isMobile ? 2 : 3,
           },
           {
             label: 'Umidade (%)',
@@ -66,7 +67,7 @@ const Charts = {
             borderDash: [5, 5],                       // linha tracejada
             tension: 0.4,
             fill: false,
-            pointRadius: 3,
+            pointRadius: isMobile ? 2 : 3,
           },
         ],
       },
@@ -76,8 +77,11 @@ const Charts = {
         animation: { duration: 300 },
         plugins: {
           legend: {
-            position: 'top',
-            labels: { font: { family: "'Inter', sans-serif", size: 12 } },
+            position: isMobile ? 'bottom' : 'top',
+            labels: {
+              boxWidth: isMobile ? 10 : 16,
+              font: { family: "'Inter', sans-serif", size: isMobile ? 10 : 12 },
+            },
           },
           tooltip: {
             mode: 'index',
@@ -91,6 +95,12 @@ const Charts = {
           },
           x: {
             grid: { display: false },
+            ticks: {
+              autoSkip: true,
+              maxRotation: 0,
+              minRotation: 0,
+              maxTicksLimit: isMobile ? 4 : 7,
+            },
           },
         },
       },

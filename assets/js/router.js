@@ -12,6 +12,7 @@ const Router = {
     dashboard: 'Visão Geral — Monitoramento Contínuo',
     estoque:   'Gestão de Insumos (RF11)',
     safras:    'Planejamento e Registro de Safra (RF04/RF05)',
+    automacao: 'Automação e Controle via Celular',
     log:       'Logs do Sistema',
   },
 
@@ -53,5 +54,6 @@ const Router = {
     if (activeTab === 'log') Logger.render();
     if (activeTab === 'estoque') Inventory.render();
     if (activeTab === 'safras') Harvest.render();
+    if (activeTab === 'automacao') Automation.init();
   },
 };

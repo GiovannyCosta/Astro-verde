@@ -158,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
   Harvest.render();
   Alerts.render();
   Dashboard.refresh();
+  Automation.init();
   Router.init();
 
   if (AppState.dataSource === 'mock') {

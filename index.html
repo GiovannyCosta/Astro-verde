@@ -23,6 +23,7 @@
   <link rel="stylesheet" href="assets/css/layout.css">
   <link rel="stylesheet" href="assets/css/components.css">
   <link rel="stylesheet" href="assets/css/dashboard.css">
+  <link rel="stylesheet" href="assets/css/automation.css">
 </head>
 
 <body>
@@ -49,6 +50,10 @@
       <a class="nav-item" href="#safras" data-tab="safras">
         <i class="ph ph-plant"></i>
         <span>Safras (RF05)</span>
+      </a>
+      <a class="nav-item" href="#automacao" data-tab="automacao">
+        <i class="ph ph-broadcast"></i>
+        <span>Automação</span>
       </a>
       <a class="nav-item" href="#log" data-tab="log">
         <i class="ph ph-clock"></i>
@@ -292,6 +297,178 @@
       </section>
 
 
+      <!-- ===== VIEW: AUTOMAÇÃO ===== -->
+      <section id="automacao" class="view-section">
+
+        <div class="auto-grid">
+
+          <!-- ——— PAINEL ESQUERDO: Alertas e Notificações ——— -->
+          <div class="panel">
+            <div class="panel-title">Configurações de Alertas de Eventos</div>
+
+            <div class="auto-sub-title">Alertas e Notificações</div>
+
+            <div class="channel-row">
+              <span class="channel-label">Canal de Envio:</span>
+              <div class="channel-pills">
+                <label class="channel-pill">
+                  <input type="checkbox" id="chWpp" checked>
+                  <span>📱 WhatsApp</span>
+                </label>
+                <label class="channel-pill">
+                  <input type="checkbox" id="chTelegram">
+                  <span>✈️ Telegram</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="wpp-input-row">
+              <label class="form-label" for="wppNumber">Número WhatsApp (com DDD)</label>
+              <div class="wpp-input-group">
+                <i class="ph ph-phone"></i>
+                <input type="tel" id="wppNumber" placeholder="+55 (11) 91234-5678" class="form-input">
+                <button class="btn btn-action" type="button" data-ui-action="save-wpp">Salvar</button>
+              </div>
+            </div>
+
+            <div class="auto-sub-title" style="margin-top:1.25rem">Eventos que disparam notificação</div>
+            <div class="alert-checks">
+              <label class="check-row">
+                <input type="checkbox" id="evtLed" checked>
+                <span class="evt-icon" style="background:#1c1b35">💡</span>
+                <span>LED Desligado</span>
+              </label>
+              <label class="check-row">
+                <input type="checkbox" id="evtTempBaixa">
+                <span class="evt-icon" style="background:#dbeafe">❄️</span>
+                <span>Temperatura Baixa</span>
+              </label>
+              <label class="check-row">
+                <input type="checkbox" id="evtTempAlta" checked>
+                <span class="evt-icon" style="background:#fee2e2">🌡️</span>
+                <span>Temperatura Alta</span>
+              </label>
+              <label class="check-row">
+                <input type="checkbox" id="evtNft" checked>
+                <span class="evt-icon" style="background:#dbeafe">💧</span>
+                <span>Fluxo NFT Interrompido</span>
+              </label>
+              <label class="check-row">
+                <input type="checkbox" id="evtPh">
+                <span class="evt-icon" style="background:#f3e8ff">⚗️</span>
+                <span>pH Fora da Faixa</span>
+              </label>
+            </div>
+
+            <div class="auto-sub-title" style="margin-top:1.25rem">Configurar Timers do Sistema</div>
+            <div class="timer-row">
+              <label class="form-label" for="checkInterval">Intervalo de Verificação (Minutos)</label>
+              <div class="timer-input-group">
+                <input type="number" id="checkInterval" value="15" min="1" max="1440" class="form-input form-input-sm">
+                <button class="btn btn-primary" type="button" data-ui-action="save-interval">Aplicar</button>
+              </div>
+            </div>
+          </div><!-- /painel esquerdo -->
+
+
+          <!-- ——— PAINEL DIREITO: Controles + Celular ——— -->
+          <div>
+
+            <!-- Controles Manuais -->
+            <div class="panel">
+              <div class="panel-title">Automações Manuais e Controles Manuais</div>
+
+              <div class="auto-sub-title">Controles Manuais de Automação</div>
+              <div class="list-group" style="margin-bottom:1.5rem">
+                <div class="list-item">
+                  <div class="item-info">
+                    <h4>Override de Iluminação</h4>
+                    <p>Substitui o ciclo automático LED</p>
+                  </div>
+                  <div class="toggle-mode" id="toggleLighting" title="Alternar modo">
+                    <span class="toggle-opt active-opt" data-side="manual">Manual</span>
+                    <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                    <span class="toggle-opt" data-side="auto">Auto</span>
+                  </div>
+                </div>
+                <div class="list-item">
+                  <div class="item-info">
+                    <h4>Override de Bomba</h4>
+                    <p>Substitui o ciclo automático de irrigação</p>
+                  </div>
+                  <div class="toggle-mode" id="togglePump" title="Alternar modo">
+                    <span class="toggle-opt active-opt" data-side="manual">Manual</span>
+                    <div class="toggle-track"><div class="toggle-thumb"></div></div>
+                    <span class="toggle-opt" data-side="auto">Auto</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="auto-sub-title">Configuração de Timers do Sistema</div>
+              <div class="cycle-header">
+                <span>Ciclo de Irrigação (Bomba)</span>
+                <span class="cycle-duration">Duração: <strong id="cycleHours">8h</strong></span>
+              </div>
+              <input type="range" id="cycleSlider" min="1" max="24" value="8" class="cycle-slider">
+              <div class="cycle-ticks" id="cycleTicks">
+                <span>0h</span><span>4h</span><span>8h</span>
+                <span>12h</span><span>16h</span><span>20h</span><span>24h</span>
+              </div>
+              <div class="cycle-timeline" id="cycleTimeline"></div>
+              <div class="cycle-info">
+                Início: <strong id="cycleStart">08:00</strong> &nbsp;|&nbsp;
+                Tempo Ligado: <strong id="cycleOn">8h</strong> &nbsp;|&nbsp;
+                Ciclo Total: <strong>24h</strong>
+              </div>
+            </div><!-- /Controles Manuais -->
+
+
+            <!-- Controle Direto via Celular -->
+            <div class="panel">
+              <div class="panel-title">
+                <span><i class="ph ph-device-mobile" style="margin-right:.35rem"></i>Controle Direto via Celular</span>
+              </div>
+
+              <div class="auto-sub-title">Ações Rápidas</div>
+              <div class="mobile-actions-grid">
+                <button class="mobile-cmd-btn cmd-pump-on" type="button" data-ui-action="cmd-pump-on">
+                  <i class="ph ph-drop-half"></i>
+                  <span>Ligar Bomba</span>
+                </button>
+                <button class="mobile-cmd-btn cmd-pump-off" type="button" data-ui-action="cmd-pump-off">
+                  <i class="ph ph-drop-slash"></i>
+                  <span>Desligar Bomba</span>
+                </button>
+                <button class="mobile-cmd-btn cmd-light-on" type="button" data-ui-action="cmd-light-on">
+                  <i class="ph ph-sun"></i>
+                  <span>Ligar LED</span>
+                </button>
+                <button class="mobile-cmd-btn cmd-light-off" type="button" data-ui-action="cmd-light-off">
+                  <i class="ph ph-moon"></i>
+                  <span>Desligar LED</span>
+                </button>
+              </div>
+
+              <div class="notif-test-row">
+                <button class="btn btn-action btn-block" type="button" data-ui-action="send-test-notif">
+                  <i class="ph ph-paper-plane-tilt"></i>
+                  Enviar Notificação de Teste
+                </button>
+              </div>
+
+              <div class="notif-log-header">Histórico de Envios</div>
+              <div class="notif-log" id="notifLog">
+                <span class="notif-log-empty">Nenhuma notificação enviada ainda.</span>
+              </div>
+            </div><!-- /Controle via Celular -->
+
+          </div><!-- /coluna direita -->
+
+        </div><!-- /auto-grid -->
+
+      </section><!-- /automacao -->
+
+
     </div><!-- /content-area -->
   </main><!-- /main-wrapper -->
 
@@ -329,6 +506,7 @@
   ============================================================ -->
   <script src="assets/js/state.js"></script>
   <script src="assets/js/modules/alerts.js"></script>
+  <script src="assets/js/modules/automation.js"></script>
   <script src="assets/js/modules/logs.js"></script>
   <script src="assets/js/modules/inventory.js"></script>
   <script src="assets/js/modules/harvest.js"></script>

@@ -1,0 +1,443 @@
+/*
+ * automation.css — Seção de Automação e Controle via Celular
+ */
+
+/* ============================================================
+   GRID PRINCIPAL DA AUTOMAÇÃO — dois painéis lado a lado
+   ============================================================ */
+
+.auto-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .auto-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   SUBTÍTULOS DE SEÇÃO INTERNA
+   ============================================================ */
+
+.auto-sub-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border-glow);
+}
+
+/* ============================================================
+   SELETOR DE CANAL — pílulas WhatsApp / Telegram
+   ============================================================ */
+
+.channel-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.channel-label {
+  font-size: 0.875rem;
+  color: var(--text-metal);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.channel-pills {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.channel-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 20px;
+  border: 2px solid var(--border-glow);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--bg-white);
+  color: var(--text-metal);
+  user-select: none;
+}
+
+.channel-pill:has(input:checked) {
+  background: #e1f0c4;
+  border-color: var(--secondary-green);
+  color: #3f5e00;
+}
+
+.channel-pill input {
+  display: none;
+}
+
+/* ============================================================
+   INPUT DE NÚMERO WHATSAPP
+   ============================================================ */
+
+.wpp-input-row {
+  margin-bottom: 1.25rem;
+}
+
+.wpp-input-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.wpp-input-group i {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.wpp-input-group .form-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ============================================================
+   CHECKBOXES DE EVENTOS
+   ============================================================ */
+
+.alert-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: 0.5rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.check-row:hover {
+  background: var(--bg-white);
+}
+
+.check-row input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--secondary-green);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.evt-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.88rem;
+  flex-shrink: 0;
+}
+
+.check-row > span:last-child {
+  font-size: 0.88rem;
+  color: var(--text-metal);
+  font-weight: 500;
+}
+
+/* ============================================================
+   TIMER DE VERIFICAÇÃO
+   ============================================================ */
+
+.timer-row {
+  margin-bottom: 0.5rem;
+}
+
+.timer-input-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-input-sm {
+  width: 72px;
+  flex: none;
+  text-align: center;
+}
+
+/* ============================================================
+   TOGGLE MANUAL / AUTO
+   ============================================================ */
+
+.toggle-mode {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.toggle-opt {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.toggle-opt.active-opt {
+  color: var(--text-black);
+}
+
+.toggle-track {
+  width: 44px;
+  height: 24px;
+  background: #d1d5db;
+  border-radius: 12px;
+  position: relative;
+  transition: background 0.25s;
+  flex-shrink: 0;
+}
+
+.toggle-mode.is-auto .toggle-track {
+  background: var(--secondary-green);
+}
+
+.toggle-thumb {
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: left 0.25s;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-mode.is-auto .toggle-thumb {
+  left: 23px;
+}
+
+/* ============================================================
+   CICLO DE IRRIGAÇÃO — slider + timeline
+   ============================================================ */
+
+.cycle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+  color: var(--text-metal);
+  margin-bottom: 0.6rem;
+}
+
+.cycle-duration {
+  color: var(--secondary-green);
+  font-weight: 700;
+}
+
+.cycle-slider {
+  width: 100%;
+  accent-color: var(--secondary-green);
+  margin-bottom: 0.6rem;
+  cursor: pointer;
+  height: 6px;
+}
+
+.cycle-timeline {
+  display: flex;
+  border-radius: 6px;
+  overflow: hidden;
+  height: 28px;
+  background: #e5e7eb;
+  margin-bottom: 0.5rem;
+}
+
+.cycle-bar {
+  background: var(--secondary-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--bg-ink-black);
+  transition: width 0.3s;
+  min-width: 28px;
+}
+
+.cycle-ticks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.cycle-info {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   CONTROLE DIRETO VIA CELULAR — botões de ação rápida
+   ============================================================ */
+
+.mobile-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.mobile-cmd-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 1rem 0.5rem;
+  border: none;
+  border-radius: 10px;
+  font-family: var(--font-main);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, filter 0.15s;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.mobile-cmd-btn i {
+  font-size: 1.5rem;
+}
+
+.cmd-pump-on  { background: #dbeafe; color: #1d4ed8; }
+.cmd-pump-off { background: #fee2e2; color: #b91c1c; }
+.cmd-light-on { background: #fef3c7; color: #92400e; }
+.cmd-light-off{ background: #f3f4f6; color: #374151; }
+
+.mobile-cmd-btn:hover  { filter: brightness(0.93); transform: translateY(-2px); }
+.mobile-cmd-btn:active { transform: translateY(0);  }
+
+/* ============================================================
+   BOTÃO DE TESTE — largura total
+   ============================================================ */
+
+.notif-test-row {
+  margin-bottom: 1rem;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* ============================================================
+   LOG DE NOTIFICAÇÕES ENVIADAS
+   ============================================================ */
+
+.notif-log-header {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.notif-log {
+  background: var(--bg-white);
+  border-radius: 8px;
+  padding: 0.75rem;
+  min-height: 72px;
+  max-height: 160px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.notif-log-empty {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin: auto;
+}
+
+.notif-log-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+}
+
+.notif-log-entry i {
+  font-size: 1rem;
+  margin-top: 1px;
+  flex-shrink: 0;
+  color: var(--secondary-green);
+}
+
+.notif-log-entry .log-msg {
+  color: var(--text-metal);
+  flex: 1;
+  line-height: 1.4;
+}
+
+.notif-log-entry .log-time {
+  color: var(--text-muted);
+  font-size: 0.73rem;
+  white-space: nowrap;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+/* ============================================================
+   RESPONSIVE MOBILE — automação
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .mobile-actions-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .channel-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .wpp-input-group {
+    flex-wrap: wrap;
+  }
+
+  .wpp-input-group .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-actions-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .mobile-cmd-btn {
+    padding: 0.85rem 0.25rem;
+    font-size: 0.75rem;
+  }
+}

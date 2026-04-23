@@ -20,12 +20,16 @@
 const createApp = require('./app');
 const config    = require('./config');
 const simulator = require('./mocks/sensorSimulator');
+const systemState = require('./state/systemState');
 
 /* Cria a aplicação Express com todas as dependências injetadas */
 const app = createApp();
 
 /* Inicia o simulador de sensores (gera dados e persiste no banco) */
 simulator.start();
+
+/* Inicia o simulador de pH em memoria para o modo simulado */
+systemState.startSimulation();
 
 /* Abre a porta e começa a aceitar requisições */
 const server = app.listen(config.PORT, () => {
@@ -45,6 +49,7 @@ const server = app.listen(config.PORT, () => {
 process.on('SIGINT', () => {
   console.log('\n[Server] Encerrando...');
   simulator.stop();
+  systemState.stopSimulation();
   server.close(() => {
     console.log('[Server] Conexões fechadas. Até logo!');
     process.exit(0);

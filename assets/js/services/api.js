@@ -1,95 +1,124 @@
 /*
- * services/api.js — Cliente HTTP para o Backend Node.js
+ * services/api.js - Camada central de integracao HTTP com backend.
  *
- * Este módulo faz as requisições HTTP para a API REST
- * do servidor Node.js (server/src/server.js).
- *
- * Enquanto o backend não estiver rodando ou enquanto
- * AppState.dataSource === 'mock', o frontend usa o
- * simulador local (mock-data.js) e este módulo fica inativo.
- *
- * Para ativar o backend real:
- *   1. Rode: cd server && npm start
- *   2. Mude AppState.dataSource = 'api' em state.js
- *   3. O frontend passa a buscar dados em tempo real da API
- *
- * Endpoints disponíveis no backend:
- *   GET  /api/sensors/latest     → última leitura dos sensores
- *   GET  /api/alerts             → alertas ativos
- *   GET  /api/logs               → log de eventos
- *   POST /api/actuators/lighting → controle da iluminação
- *   POST /api/actuators/temperature → controle de temperatura
- *   POST /api/telemetry          → ponto de integração futura (ESP32)
+ * Toda chamada para API fica concentrada neste arquivo para manter:
+ * - frontend limpo
+ * - endpoint facil de trocar
+ * - adaptacao simples para camada fisica futura (ESP32)
  */
 
 const ApiService = {
-
-  /* URL base do backend — mude a porta se necessário */
-  BASE_URL: 'http://localhost:3001/api',
-
-  /* ============================================================
-     BUSCAR ÚLTIMA LEITURA DOS SENSORES
-     Retorna: { ph, ec, tds, temperature, humidity, luminosity, waterLevel, nftFlow }
-     ============================================================ */
-  async getSensors() {
-    const res = await fetch(`${this.BASE_URL}/sensors/latest`);
-    if (!res.ok) throw new Error('Falha ao buscar sensores');
-    return res.json();
+  /* Retorna payload "data" do padrao novo sem quebrar formato legado. */
+  _extractData(payload) {
+    if (payload && typeof payload === 'object' && 'data' in payload) {
+      return payload.data;
+    }
+    return payload;
   },
 
-  /* ============================================================
-     BUSCAR ALERTAS ATIVOS
-     ============================================================ */
-  async getAlerts() {
-    const res = await fetch(`${this.BASE_URL}/alerts`);
-    if (!res.ok) throw new Error('Falha ao buscar alertas');
-    return res.json();
+  /*
+   * Monta URL completa a partir de chave de endpoint ou caminho direto.
+   * Se receber "logs?limit=20", concatena com a base mantendo querystring.
+   */
+  _url(endpointKeyOrPath) {
+    if (ApiConfig.endpoints[endpointKeyOrPath]) {
+      return `${ApiConfig.baseUrl}${ApiConfig.endpoints[endpointKeyOrPath]}`;
+    }
+
+    const path = endpointKeyOrPath.startsWith('/') ? endpointKeyOrPath : `/${endpointKeyOrPath}`;
+    return `${ApiConfig.baseUrl}${path}`;
   },
 
-  /* ============================================================
-     BUSCAR LOG DO SISTEMA
-     ============================================================ */
-  async getLogs(limit = 50) {
-    const res = await fetch(`${this.BASE_URL}/logs?limit=${limit}`);
-    if (!res.ok) throw new Error('Falha ao buscar logs');
-    return res.json();
+  /* Executa GET simples e devolve payload de negocio. */
+  async _get(endpointKey) {
+    const payload = await HttpClient.request(this._url(endpointKey));
+    return this._extractData(payload);
   },
 
-  /* ============================================================
-     CONTROLAR ILUMINAÇÃO
-     command: 'on' | 'off'
-     power:   0–100 (potência em %)
-     ============================================================ */
-  async setLighting(command, power = 100) {
-    const res = await fetch(`${this.BASE_URL}/actuators/lighting`, {
+  /* Executa POST JSON e devolve payload de negocio. */
+  async _post(endpointKey, body = {}) {
+    const payload = await HttpClient.request(this._url(endpointKey), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ command, power }),
+      body: JSON.stringify(body),
     });
-    if (!res.ok) throw new Error('Falha ao controlar iluminação');
-    return res.json();
+    return this._extractData(payload);
   },
 
-  /* ============================================================
-     EXPORTAR CSV
-     ============================================================ */
-  async exportCsv() {
-    window.open(`${this.BASE_URL}/sensors/export/csv`, '_blank');
+  /* Busca sensores para atualizar cards do dashboard. */
+  async getSensors() {
+    return this._get('sensorsLatest');
   },
 
-  /* ============================================================
-     SINCRONIZAR ESTADO DO APPSTATE COM O BACKEND
-     Chamado periodicamente quando dataSource = 'api'.
-     ============================================================ */
+  /* Busca estado global do backend (pH, bomba, modo e origem da leitura). */
+  async getSystemState() {
+    return this._get('systemState');
+  },
+
+  /* Busca alertas ativos. */
+  async getAlerts() {
+    return this._get('alerts');
+  },
+
+  /* Busca logs recentes. */
+  async getLogs(limit = 50) {
+    return this._get(`logs?limit=${limit}`);
+  },
+
+  /* Envia comando de iluminacao para backend. */
+  async setLighting(command, power = 100) {
+    return this._post('lighting', { command, power });
+  },
+
+  /* Envia comando manual de bomba (preparado para camada fisica futura). */
+  async setPumpState(ligar) {
+    return this._post('controlPump', { ligar });
+  },
+
+  /* Alterna backend entre modo simulado e modo real. */
+  async setSystemMode(modo) {
+    return this._post('mode', { modo });
+  },
+
+  /* Envia leitura de pH para endpoint preparado para ESP32. */
+  async sendPhReading(ph, deviceId) {
+    return this._post('sensorPh', { ph, deviceId });
+  },
+
+  /* Abre exportacao CSV em nova aba. */
+  exportCsv() {
+    window.open(this._url('sensorsCsv'), '_blank');
+  },
+
+  /*
+   * Sincroniza AppState com backend.
+   * Atualiza tanto sensores/atuadores quanto estado global de sistema.
+   */
   async syncState() {
     try {
-      const data = await this.getSensors();
-      // Atualiza AppState com os dados reais da API
-      Object.assign(AppState.sensors, data.sensors);
-      Object.assign(AppState.actuators, data.actuators);
+      const [sensorData, systemData] = await Promise.all([
+        this.getSensors(),
+        this.getSystemState(),
+      ]);
+
+      if (sensorData && sensorData.sensors) {
+        Object.assign(AppState.sensors, sensorData.sensors);
+      }
+      if (sensorData && sensorData.actuators) {
+        Object.assign(AppState.actuators, sensorData.actuators);
+      }
+
+      if (systemData) {
+        AppState.system.phAtual = systemData.ph;
+        AppState.system.bombaLigada = systemData.bomba;
+        AppState.system.modoAtual = systemData.modo;
+        AppState.system.origemLeitura = systemData.origemLeitura;
+        AppState.system.ultimaAtualizacao = systemData.ultimaAtualizacao;
+      }
+
       Dashboard.refresh();
     } catch (err) {
-      console.warn('[API] Falha na sincronização, mantendo mock:', err.message);
+      console.warn('[API] Falha na sincronizacao com backend:', err.message);
     }
   },
 };

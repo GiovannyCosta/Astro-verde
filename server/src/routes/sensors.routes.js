@@ -1,8 +1,7 @@
 /*
- * routes/sensors.routes.js — Rotas dos Sensores
+ * routes/sensors.routes.js - Rotas de leitura e exportacao de sensores.
  *
- * Define os endpoints HTTP relacionados aos sensores.
- * Cada rota chama um método do controller correspondente.
+ * Inclui endpoint de telemetria para integracao com ESP32.
  */
 
 const express = require('express');
@@ -10,16 +9,15 @@ const express = require('express');
 function makeSensorsRouter(sensorsController) {
   const router = express.Router();
 
-  /* Última leitura dos sensores */
+  /* Ultima leitura consolidada para atualizar dashboard. */
   router.get('/latest', (req, res) => sensorsController.getLatest(req, res));
 
-  /* Exportar dados históricos como CSV */
+  /* Exporta historico bruto em CSV para analise externa. */
   router.get('/export/csv', (req, res) => sensorsController.exportCsv(req, res));
 
   /*
-   * Receber telemetria de hardware (ESP32/Arduino)
-   * Este é o ponto de integração futura com hardware real.
-   * O ESP32 deve fazer POST neste endpoint periodicamente.
+   * Endpoint de telemetria para camada fisica (ESP32).
+   * O microcontrolador envia pacote de sensores por POST.
    */
   router.post('/telemetry', (req, res) => sensorsController.ingestTelemetry(req, res));
 

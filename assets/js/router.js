@@ -1,24 +1,22 @@
 /*
- * router.js - Navegação entre abas
+ * router.js - Navegacao simples por hash entre secoes da tela.
  *
- * Mostra/oculta sections sem recarregar a página.
- * Os links usam data-tab + hash (#aba), enquanto o JS
- * intercepta o clique e atualiza a view ativa.
+ * Mantem a troca de abas desacoplada dos modulos de negocio.
  */
 
 const Router = {
-
   titles: {
-    dashboard: 'Visão Geral — Monitoramento Contínuo',
-    estoque:   'Gestão de Insumos (RF11)',
-    safras:    'Planejamento e Registro de Safra (RF04/RF05)',
-    automacao: 'Automação e Controle via Celular',
-    log:       'Logs do Sistema',
+    dashboard: 'Visao Geral - Monitoramento Continuo',
+    estoque: 'Gestao de Insumos (RF11)',
+    safras: 'Planejamento e Registro de Safra (RF04/RF05)',
+    automacao: 'Automacao e Controle via Celular',
+    log: 'Logs do Sistema',
   },
 
+  /* Conecta links de menu e define aba inicial. */
   init() {
-    document.querySelectorAll('.nav-item[data-tab]').forEach(link => {
-      link.addEventListener('click', event => {
+    document.querySelectorAll('.nav-item[data-tab]').forEach((link) => {
+      link.addEventListener('click', (event) => {
         event.preventDefault();
         this.navigate(link.dataset.tab, link);
       });
@@ -28,24 +26,24 @@ const Router = {
     this.navigate(initialTab || 'dashboard');
   },
 
-  navigate(tabId, element = null) {
+  /* Ativa aba solicitada e renderiza modulos dependentes quando necessario. */
+  navigate(tabId, triggerElement = null) {
     const activeTab = this.titles[tabId] ? tabId : 'dashboard';
-    const activeItem =
-      element ||
-      document.querySelector(`.nav-item[data-tab="${activeTab}"]`) ||
-      document.querySelector('.nav-item[data-tab="dashboard"]');
+    const menuItem = triggerElement
+      || document.querySelector(`.nav-item[data-tab="${activeTab}"]`)
+      || document.querySelector('.nav-item[data-tab="dashboard"]');
 
-    if (!activeItem) return;
+    if (!menuItem) return;
 
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    activeItem.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach((item) => item.classList.remove('active'));
+    menuItem.classList.add('active');
 
-    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-    const target = document.getElementById(activeTab);
-    if (target) target.classList.add('active');
+    document.querySelectorAll('.view-section').forEach((section) => section.classList.remove('active'));
+    const targetSection = document.getElementById(activeTab);
+    if (targetSection) targetSection.classList.add('active');
 
-    const titleEl = document.getElementById('pageTitle');
-    if (titleEl) titleEl.textContent = this.titles[activeTab] || activeTab;
+    const titleElement = document.getElementById('pageTitle');
+    if (titleElement) titleElement.textContent = this.titles[activeTab] || activeTab;
 
     if (window.location.hash !== `#${activeTab}`) {
       history.replaceState(null, '', `#${activeTab}`);

@@ -1,38 +1,34 @@
 /*
- * controllers/sensorsController.js — Tratamento HTTP dos Sensores
+ * controllers/sensorsController.js - Controller HTTP de sensores.
  *
- * O controller é a camada mais próxima do HTTP.
- * Responsabilidades:
- * - receber req (request)
- * - chamar o service correto
- * - responder com res (response) em JSON
- * - tratar erros HTTP (400, 404, 500)
- *
- * O controller NÃO contém lógica de negócio — ela fica no service.
+ * Responsabilidade:
+ * - receber requisicoes HTTP de sensores
+ * - chamar a camada de servico
+ * - devolver resposta padronizada
  */
+
+const { sendSuccess, sendError } = require('../utils/httpResponse');
 
 function makeSensorsController(sensorsService) {
   return {
-
-    /* GET /api/sensors/latest — retorna estado atual dos sensores */
+    /* GET /api/sensors/latest - leitura mais recente para dashboard. */
     getLatest(req, res) {
       try {
         const data = sensorsService.getLatestReading();
-        res.json(data);
+        return sendSuccess(res, 'Leitura mais recente carregada com sucesso.', data);
       } catch (err) {
-        res.status(500).json({ error: err.message });
+        return sendError(res, err.message, 500);
       }
     },
 
     /*
-     * POST /api/telemetry — recebe dados do ESP32/Arduino
+     * POST /api/telemetry - endpoint para telemetria do ESP32.
      *
      * Payload esperado:
      * {
      *   "device_id": "astroverde-node-01",
      *   "ph": 6.18,
      *   "ec": 1.74,
-     *   "tds": 870,
      *   "temperature": 23.5,
      *   "humidity": 65,
      *   "luminosity": 820,
@@ -42,29 +38,27 @@ function makeSensorsController(sensorsService) {
      */
     ingestTelemetry(req, res) {
       try {
-        const result = sensorsService.ingestTelemetry(req.body);
-        res.status(201).json(result);
+        const data = sensorsService.ingestTelemetry(req.body);
+        return sendSuccess(res, 'Telemetria recebida com sucesso.', data, 201);
       } catch (err) {
-        res.status(400).json({ error: err.message });
+        return sendError(res, err.message, 400);
       }
     },
 
-    /* GET /api/sensors/export/csv — exporta dados históricos */
+    /* GET /api/sensors/export/csv - exporta historico bruto em CSV. */
     exportCsv(req, res) {
       try {
         const rows = sensorsService.getExportData();
-
-        // Gera CSV manualmente (sem dependência extra)
         const header = 'device_id,sensor_type,value,unit,quality,lighting_state,temp_control,collected_at\n';
-        const body   = rows.map(r =>
-          `${r.device_id},${r.sensor_type},${r.value},${r.unit},${r.quality},${r.lighting_state},${r.temp_control},${r.collected_at}`
+        const body = rows.map((row) =>
+          `${row.device_id},${row.sensor_type},${row.value},${row.unit},${row.quality},${row.lighting_state},${row.temp_control},${row.collected_at}`
         ).join('\n');
 
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', 'attachment; filename="astroverde-export.csv"');
-        res.send(header + body);
+        return res.send(header + body);
       } catch (err) {
-        res.status(500).json({ error: err.message });
+        return sendError(res, err.message, 500);
       }
     },
   };

@@ -1,38 +1,47 @@
 /*
- * controllers/alertsController.js — Tratamento HTTP dos Alertas
+ * controllers/alertsController.js - Controller HTTP de alertas.
+ *
+ * Responsavel por listar alertas ativos/historico e resolver alertas.
  */
+
+const { sendSuccess, sendError } = require('../utils/httpResponse');
 
 function makeAlertsController(alertsRepo) {
   return {
-
-    /* GET /api/alerts — retorna alertas ativos */
+    /* GET /api/alerts - retorna apenas alertas ativos. */
     getActive(req, res) {
       try {
         const alerts = alertsRepo.getActive();
-        res.json({ alerts, count: alerts.length });
+        return sendSuccess(res, 'Alertas ativos carregados.', {
+          alerts,
+          count: alerts.length,
+        });
       } catch (err) {
-        res.status(500).json({ error: err.message });
+        return sendError(res, err.message, 500);
       }
     },
 
-    /* GET /api/alerts/history — histórico completo */
+    /* GET /api/alerts/history - retorna historico de alertas. */
     getHistory(req, res) {
       try {
-        const limit  = parseInt(req.query.limit) || 100;
+        const limit = parseInt(req.query.limit, 10) || 100;
         const alerts = alertsRepo.getAll(limit);
-        res.json({ alerts });
+        return sendSuccess(res, 'Historico de alertas carregado.', { alerts });
       } catch (err) {
-        res.status(500).json({ error: err.message });
+        return sendError(res, err.message, 500);
       }
     },
 
-    /* POST /api/alerts/:type/resolve — fecha um alerta */
+    /* POST /api/alerts/:type/resolve - marca alerta como resolvido. */
     resolve(req, res) {
       try {
         alertsRepo.resolve(req.params.type);
-        res.json({ resolved: true, alertType: req.params.type });
+        return sendSuccess(res, 'Alerta resolvido com sucesso.', {
+          resolved: true,
+          alertType: req.params.type,
+        });
       } catch (err) {
-        res.status(500).json({ error: err.message });
+        return sendError(res, err.message, 500);
       }
     },
   };

@@ -34,18 +34,25 @@ const makeLogsRepository      = require('./repositories/logsRepository');
 /* --- Services --- */
 const makeSensorsService   = require('./services/sensorsService');
 const makeActuatorsService = require('./services/actuatorsService');
+const makeSystemService    = require('./services/systemService');
 
 /* --- Controllers --- */
 const makeSensorsController   = require('./controllers/sensorsController');
 const makeAlertsController    = require('./controllers/alertsController');
 const makeActuatorsController = require('./controllers/actuatorsController');
 const makeLogsController      = require('./controllers/logsController');
+const makeSystemController    = require('./controllers/systemController');
+
+/* --- Estado global em memoria --- */
+const systemState = require('./state/systemState');
 
 /* --- Rotas --- */
 const makeSensorsRouter   = require('./routes/sensors.routes');
 const makeAlertsRouter    = require('./routes/alerts.routes');
 const makeActuatorsRouter = require('./routes/actuators.routes');
 const makeLogsRouter      = require('./routes/logs.routes');
+const makeSystemRouter    = require('./routes/system.routes');
+const { sendSuccess } = require('./utils/httpResponse');
 
 function createApp() {
   const app = express();
@@ -73,12 +80,14 @@ function createApp() {
   /* --- Instância dos services --- */
   const sensorsService   = makeSensorsService(sensorsRepo, alertsRepo, logsRepo);
   const actuatorsService = makeActuatorsService(db);
+  const systemService    = makeSystemService(systemState);
 
   /* --- Instância dos controllers --- */
   const sensorsCtrl   = makeSensorsController(sensorsService);
   const alertsCtrl    = makeAlertsController(alertsRepo);
   const actuatorsCtrl = makeActuatorsController(actuatorsService);
   const logsCtrl      = makeLogsController(logsRepo);
+  const systemCtrl    = makeSystemController(systemService);
 
   /* --- Registro das rotas --- */
   app.use('/api/sensors',    makeSensorsRouter(sensorsCtrl));
@@ -92,10 +101,11 @@ function createApp() {
   app.use('/api/alerts',     makeAlertsRouter(alertsCtrl));
   app.use('/api/actuators',  makeActuatorsRouter(actuatorsCtrl));
   app.use('/api/logs',       makeLogsRouter(logsCtrl));
+  app.use('/api',            makeSystemRouter(systemCtrl));
 
   /* --- Rota raiz da API --- */
   app.get('/api', (req, res) => {
-    res.json({
+    sendSuccess(res, 'API Astro Verde online.', {
       name:    'Astro Verde API',
       version: '1.0.0',
       status:  'online',
@@ -103,6 +113,11 @@ function createApp() {
         'GET  /api/sensors/latest',
         'GET  /api/sensors/export/csv',
         'POST /api/telemetry',
+        'POST /api/sensor/ph',
+        'GET  /api/state',
+        'POST /api/control/pump',
+        'POST /api/mode',
+        'GET  /api/health',
         'GET  /api/alerts',
         'GET  /api/alerts/history',
         'POST /api/alerts/:type/resolve',

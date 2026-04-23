@@ -1,8 +1,14 @@
 /*
- * modules/automation.js — Automação, Alertas e Controle via Celular
+ * modules/automation.js - Controles de automacao, notificacao e comandos manuais.
+ *
+ * Responsabilidades:
+ * - configurar overrides (manual/auto)
+ * - salvar preferencias de notificacao
+ * - executar comandos rapidos pelo painel
  */
 
 const Automation = {
+  _isBound: false,
 
   state: {
     lightingMode: 'manual',
@@ -14,153 +20,190 @@ const Automation = {
     events: { led: true, tempBaixa: false, tempAlta: true, nft: true, ph: false },
   },
 
+  /*
+   * Inicializa eventos da aba de automacao.
+   * O guard _isBound evita duplicar listeners a cada troca de aba.
+   */
   init() {
-    this._bindToggles();
-    this._bindSlider();
+    if (!this._isBound) {
+      this._bindToggles();
+      this._bindSlider();
+      this._bindActions();
+      this._isBound = true;
+    }
+
     this._renderTimeline();
-    this._bindActions();
   },
 
+  /* Conecta switches de override manual/automatico. */
   _bindToggles() {
     [
-      { id: 'toggleLighting', key: 'lightingMode', label: 'Override Iluminação' },
-      { id: 'togglePump',     key: 'pumpMode',     label: 'Override Bomba'      },
+      { id: 'toggleLighting', key: 'lightingMode', label: 'Override Iluminacao' },
+      { id: 'togglePump', key: 'pumpMode', label: 'Override Bomba' },
     ].forEach(({ id, key, label }) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.addEventListener('click', () => {
-        const isAuto = el.classList.toggle('is-auto');
+      const element = document.getElementById(id);
+      if (!element) return;
+
+      element.addEventListener('click', () => {
+        const isAuto = element.classList.toggle('is-auto');
         const mode = isAuto ? 'auto' : 'manual';
-        el.querySelectorAll('.toggle-opt').forEach(opt => {
-          opt.classList.toggle('active-opt', opt.dataset.side === mode);
+
+        element.querySelectorAll('.toggle-opt').forEach((option) => {
+          option.classList.toggle('active-opt', option.dataset.side === mode);
         });
+
         this.state[key] = mode;
         Logger.add('info', label, `Modo alterado para: ${mode}`);
       });
     });
   },
 
+  /* Conecta slider de ciclo de irrigacao. */
   _bindSlider() {
     const slider = document.getElementById('cycleSlider');
     if (!slider) return;
+
     slider.addEventListener('input', () => {
-      const h = parseInt(slider.value, 10);
-      this.state.cycleHours = h;
-      const hoursEl = document.getElementById('cycleHours');
-      const onEl    = document.getElementById('cycleOn');
-      if (hoursEl) hoursEl.textContent = `${h}h`;
-      if (onEl)    onEl.textContent    = `${h}h`;
+      const hours = parseInt(slider.value, 10);
+      this.state.cycleHours = hours;
+
+      const hoursLabel = document.getElementById('cycleHours');
+      const onLabel = document.getElementById('cycleOn');
+      if (hoursLabel) hoursLabel.textContent = `${hours}h`;
+      if (onLabel) onLabel.textContent = `${hours}h`;
+
       this._renderTimeline();
     });
   },
 
+  /* Renderiza barra visual do ciclo configurado no slider. */
   _renderTimeline() {
     const container = document.getElementById('cycleTimeline');
     if (!container) return;
-    const h   = this.state.cycleHours;
-    const pct = ((h / 24) * 100).toFixed(1);
-    const startHour = 8;
-    container.innerHTML = `<div class="cycle-bar" style="width:${pct}%">${h}h</div>`;
 
-    const ticksEl = document.getElementById('cycleTicks');
-    if (ticksEl) {
-      const marks = [0, 4, 8, 12, 16, 20, 24];
-      ticksEl.innerHTML = marks.map(m => `<span>${m}h</span>`).join('');
-    }
+    const hours = this.state.cycleHours;
+    const widthPercent = ((hours / 24) * 100).toFixed(1);
+    container.innerHTML = `<div class="cycle-bar" style="width:${widthPercent}%">${hours}h</div>`;
 
-    const startEl = document.getElementById('cycleStart');
-    if (startEl) startEl.textContent = `${String(startHour).padStart(2,'0')}:00`;
+    const marks = [0, 4, 8, 12, 16, 20, 24];
+    const ticks = document.getElementById('cycleTicks');
+    if (ticks) ticks.innerHTML = marks.map((mark) => `<span>${mark}h</span>`).join('');
+
+    const start = document.getElementById('cycleStart');
+    if (start) start.textContent = '08:00';
   },
 
+  /* Conecta botoes e checkboxes da area de automacao/notificacao. */
   _bindActions() {
-    // Salvar número WhatsApp
-    document.querySelector('[data-ui-action="save-wpp"]')
-      ?.addEventListener('click', () => {
-        const num = (document.getElementById('wppNumber')?.value || '').trim();
-        if (!num) { Modal.show('Aviso', 'Informe um número de WhatsApp válido.', 'warning'); return; }
-        this.state.wppNumber = num;
-        Modal.show('Salvo!', `Notificações WhatsApp serão enviadas para ${num}.`, 'success');
-        Logger.add('info', 'WhatsApp', `Número configurado: ${num}`);
-        this._addNotifLog('ph-check-circle', `Número ${num} salvo com sucesso.`);
-      });
+    document.querySelector('[data-ui-action="save-wpp"]')?.addEventListener('click', () => {
+      const number = (document.getElementById('wppNumber')?.value || '').trim();
+      if (!number) {
+        Modal.show('Aviso', 'Informe um numero de WhatsApp valido.', 'warning');
+        return;
+      }
 
-    // Salvar intervalo de verificação
-    document.querySelector('[data-ui-action="save-interval"]')
-      ?.addEventListener('click', () => {
-        const val = parseInt(document.getElementById('checkInterval')?.value || '0', 10);
-        if (!val || val < 1 || val > 1440) {
-          Modal.show('Aviso', 'Informe um intervalo entre 1 e 1440 minutos.', 'warning');
-          return;
-        }
-        this.state.checkInterval = val;
-        Modal.show('Configurado!', `Sistema verificará alertas a cada ${val} minuto(s).`, 'success');
-        Logger.add('info', 'Timer', `Intervalo de verificação definido: ${val} min`);
-      });
-
-    // Comandos rápidos via celular
-    const cmds = {
-      'cmd-pump-on':  ['ph-drop-half',      'Bomba Ligada',     'Bomba de irrigação ativada manualmente via painel.'],
-      'cmd-pump-off': ['ph-drop-slash',      'Bomba Desligada',  'Bomba de irrigação desativada manualmente via painel.'],
-      'cmd-light-on': ['ph-sun',             'LED Ligado',       'Iluminação LED ativada manualmente via painel.'],
-      'cmd-light-off':['ph-moon',            'LED Desligado',    'Iluminação LED desativada manualmente via painel.'],
-    };
-
-    Object.entries(cmds).forEach(([action, [icon, title, msg]]) => {
-      document.querySelector(`[data-ui-action="${action}"]`)
-        ?.addEventListener('click', () => {
-          Modal.show(title, msg, 'success');
-          Logger.add('info', title, msg);
-          this._addNotifLog(icon, msg);
-        });
+      this.state.wppNumber = number;
+      Modal.show('Salvo!', `Notificacoes WhatsApp serao enviadas para ${number}.`, 'success');
+      Logger.add('info', 'WhatsApp', `Numero configurado: ${number}`);
+      this._addNotifLog('ph-check-circle', `Numero ${number} salvo com sucesso.`);
     });
 
-    // Enviar notificação de teste
-    document.querySelector('[data-ui-action="send-test-notif"]')
-      ?.addEventListener('click', () => {
-        const channels = [];
-        if (this.state.channels.whatsapp) channels.push('WhatsApp');
-        if (this.state.channels.telegram) channels.push('Telegram');
-        const dest = channels.length ? channels.join(' e ') : 'nenhum canal configurado';
-        const msg  = `Notificação de teste enviada via ${dest}. Sistema operando normalmente.`;
-        Modal.show('Teste Enviado', msg, 'info');
-        Logger.add('info', 'Notificação de Teste', msg);
-        this._addNotifLog('ph-paper-plane-tilt', `Teste: ${dest}`);
-      });
+    document.querySelector('[data-ui-action="save-interval"]')?.addEventListener('click', () => {
+      const value = parseInt(document.getElementById('checkInterval')?.value || '0', 10);
+      if (!value || value < 1 || value > 1440) {
+        Modal.show('Aviso', 'Informe um intervalo entre 1 e 1440 minutos.', 'warning');
+        return;
+      }
 
-    // Checkboxes de canal
-    const chWpp      = document.getElementById('chWpp');
-    const chTelegram = document.getElementById('chTelegram');
-    chWpp?.addEventListener('change',      () => { this.state.channels.whatsapp  = chWpp.checked; });
-    chTelegram?.addEventListener('change', () => { this.state.channels.telegram  = chTelegram.checked; });
+      this.state.checkInterval = value;
+      Modal.show('Configurado!', `Sistema verificara alertas a cada ${value} minuto(s).`, 'success');
+      Logger.add('info', 'Timer', `Intervalo de verificacao definido: ${value} min`);
+    });
 
-    // Checkboxes de eventos
-    const evtMap = {
-      evtLed:      'led',
-      evtTempBaixa:'tempBaixa',
-      evtTempAlta: 'tempAlta',
-      evtNft:      'nft',
-      evtPh:       'ph',
+    const commands = {
+      'cmd-pump-on': ['ph-drop-half', 'Bomba Ligada', 'Bomba de irrigacao ativada manualmente via painel.'],
+      'cmd-pump-off': ['ph-drop-slash', 'Bomba Desligada', 'Bomba de irrigacao desativada manualmente via painel.'],
+      'cmd-light-on': ['ph-sun', 'LED Ligado', 'Iluminacao LED ativada manualmente via painel.'],
+      'cmd-light-off': ['ph-moon', 'LED Desligado', 'Iluminacao LED desativada manualmente via painel.'],
     };
-    Object.entries(evtMap).forEach(([id, key]) => {
-      document.getElementById(id)?.addEventListener('change', e => {
-        this.state.events[key] = e.target.checked;
+
+    Object.entries(commands).forEach(([action, [icon, title, message]]) => {
+      document.querySelector(`[data-ui-action="${action}"]`)?.addEventListener('click', async () => {
+        if (AppState.dataSource === 'api') {
+          await this._trySendHardwareCommand(action);
+        }
+
+        Modal.show(title, message, 'success');
+        Logger.add('info', title, message);
+        this._addNotifLog(icon, message);
+      });
+    });
+
+    document.querySelector('[data-ui-action="send-test-notif"]')?.addEventListener('click', () => {
+      const channels = [];
+      if (this.state.channels.whatsapp) channels.push('WhatsApp');
+      if (this.state.channels.telegram) channels.push('Telegram');
+
+      const destination = channels.length ? channels.join(' e ') : 'nenhum canal configurado';
+      const message = `Notificacao de teste enviada via ${destination}. Sistema operando normalmente.`;
+      Modal.show('Teste Enviado', message, 'info');
+      Logger.add('info', 'Notificacao de Teste', message);
+      this._addNotifLog('ph-paper-plane-tilt', `Teste: ${destination}`);
+    });
+
+    const whatsappCheckbox = document.getElementById('chWpp');
+    const telegramCheckbox = document.getElementById('chTelegram');
+    whatsappCheckbox?.addEventListener('change', () => { this.state.channels.whatsapp = whatsappCheckbox.checked; });
+    telegramCheckbox?.addEventListener('change', () => { this.state.channels.telegram = telegramCheckbox.checked; });
+
+    const eventMap = {
+      evtLed: 'led',
+      evtTempBaixa: 'tempBaixa',
+      evtTempAlta: 'tempAlta',
+      evtNft: 'nft',
+      evtPh: 'ph',
+    };
+
+    Object.entries(eventMap).forEach(([elementId, key]) => {
+      document.getElementById(elementId)?.addEventListener('change', (event) => {
+        this.state.events[key] = event.target.checked;
       });
     });
   },
 
-  _addNotifLog(icon, msg) {
+  /*
+   * Quando em modo API, envia comandos para endpoints novos da camada fisica.
+   * Isso deixa o frontend preparado para ESP32 sem mudar interface.
+   */
+  async _trySendHardwareCommand(action) {
+    try {
+      if (action === 'cmd-pump-on') await ApiService.setPumpState(true);
+      if (action === 'cmd-pump-off') await ApiService.setPumpState(false);
+      if (action === 'cmd-light-on') await ApiService.setLighting('on', 100);
+      if (action === 'cmd-light-off') await ApiService.setLighting('off', 0);
+      await ApiService.syncState();
+    } catch (error) {
+      Logger.add('warning', 'Comando API', `Falha ao enviar comando para backend: ${error.message}`);
+    }
+  },
+
+  /* Registra historico visual de notificacoes na aba de automacao. */
+  _addNotifLog(icon, message) {
     const container = document.getElementById('notifLog');
     if (!container) return;
+
     const empty = container.querySelector('.notif-log-empty');
     if (empty) empty.remove();
+
     const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     const entry = document.createElement('div');
     entry.className = 'notif-log-entry';
     entry.innerHTML = `
       <i class="ph ${icon}"></i>
-      <span class="log-msg">${msg}</span>
+      <span class="log-msg">${message}</span>
       <span class="log-time">${time}</span>
     `;
+
     container.prepend(entry);
   },
 };

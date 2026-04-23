@@ -1,18 +1,21 @@
 /*
- * controllers/logsController.js — Tratamento HTTP dos Logs
+ * controllers/logsController.js - Controller HTTP de logs operacionais.
+ *
+ * Exibe eventos gravados no backend para suporte e diagnostico.
  */
+
+const { sendSuccess, sendError } = require('../utils/httpResponse');
 
 function makeLogsController(logsRepo) {
   return {
-
-    /* GET /api/logs — retorna log de eventos */
+    /* GET /api/logs - lista logs recentes do sistema. */
     getRecent(req, res) {
       try {
-        const limit = parseInt(req.query.limit) || 50;
-        const logs  = logsRepo.getRecent(limit);
-        res.json({ logs });
+        const limit = parseInt(req.query.limit, 10) || 50;
+        const logs = logsRepo.getRecent(limit);
+        return sendSuccess(res, 'Logs carregados com sucesso.', { logs });
       } catch (err) {
-        res.status(500).json({ error: err.message });
+        return sendError(res, err.message, 500);
       }
     },
   };

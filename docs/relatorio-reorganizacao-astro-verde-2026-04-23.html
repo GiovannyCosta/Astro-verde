@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório Técnico - Reorganização INOVATECH ASTRO VERDE</title>
+  <style>
+    :root {
+      --text: #1f2937;
+      --muted: #4b5563;
+      --title: #065f46;
+      --border: #d1d5db;
+      --bg: #ffffff;
+      --accent: #059669;
+    }
+
+    body {
+      margin: 40px auto;
+      max-width: 960px;
+      padding: 0 24px 40px;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    h1, h2, h3 {
+      color: var(--title);
+      margin-top: 24px;
+      margin-bottom: 10px;
+      line-height: 1.25;
+    }
+
+    h1 {
+      font-size: 30px;
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 8px;
+    }
+
+    h2 {
+      font-size: 22px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+    }
+
+    h3 {
+      font-size: 17px;
+    }
+
+    p {
+      margin: 8px 0;
+      color: var(--text);
+    }
+
+    ul, ol {
+      margin: 8px 0 10px 22px;
+      padding: 0;
+    }
+
+    li {
+      margin: 4px 0;
+    }
+
+    code {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      padding: 1px 5px;
+    }
+
+    .meta {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      background: #f9fafb;
+      color: var(--muted);
+    }
+
+    .section {
+      margin-top: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #fafafa;
+    }
+
+    .footer {
+      margin-top: 32px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media print {
+      body {
+        margin: 12mm auto;
+        max-width: none;
+        padding: 0;
+        font-size: 12px;
+      }
+
+      h1 { font-size: 24px; }
+      h2 { font-size: 18px; }
+      h3 { font-size: 14px; }
+      .card { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Relatório Técnico de Reorganização</h1>
+  <div class="meta">
+    <p><strong>Projeto:</strong> INOVATECH ASTRO VERDE</p>
+    <p><strong>Data:</strong> 23/04/2026</p>
+    <p><strong>Objetivo:</strong> organizar, padronizar e preparar o software para integração futura com ESP32 + sensor de pH + bomba, mantendo o funcionamento existente.</p>
+  </div>
+
+  <section class="section">
+    <h2>1. Resumo Executivo</h2>
+    <p>A base foi reorganizada sem recriar do zero, com foco em separação de responsabilidades, legibilidade e continuidade do projeto.</p>
+    <p>Foram adicionados estado central do sistema, rotas dedicadas para integração física, padronização de respostas HTTP no backend e centralização de chamadas HTTP no frontend.</p>
+  </section>
+
+  <section class="section">
+    <h2>2. Diagnóstico da Estrutura Original</h2>
+    <ul>
+      <li>Frontend e backend já estavam separados, porém com alguns acoplamentos de fluxo e padronização incompleta.</li>
+      <li>Respostas da API eram heterogêneas entre diferentes controladores.</li>
+      <li>Lógica de controle da bomba por pH não estava isolada em serviço próprio.</li>
+      <li>Faltava endpoint de troca de modo (<code>simulado</code> / <code>real</code>).</li>
+      <li>No frontend, endpoints não estavam centralizados em constantes e faltava cliente HTTP comum.</li>
+      <li>Estado de sistema voltado à integração física (modo, origem de leitura, última atualização) não estava explícito.</li>
+      <li>Módulo de automação tinha risco de duplicar listeners em reentrada de aba.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <h2>3. Reorganização Aplicada</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Backend</h3>
+        <ul>
+          <li><code>server/src/routes</code>: rotas HTTP</li>
+          <li><code>server/src/controllers</code>: camada HTTP</li>
+          <li><code>server/src/services</code>: regras de negócio</li>
+          <li><code>server/src/state</code>: estado central em memória</li>
+          <li><code>server/src/utils</code>: utilitários compartilhados</li>
+          <li><code>server/src/config</code>: configurações</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Frontend</h3>
+        <ul>
+          <li><code>assets/js/modules</code>: módulos de interface</li>
+          <li><code>assets/js/services</code>: integração com API</li>
+          <li><code>assets/js/constants</code>: endpoints centralizados</li>
+          <li><code>assets/js/utils</code>: utilitário HTTP</li>
+          <li><code>assets/js/state.js</code>: estado global da UI</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>4. Preparação para Camada Física</h2>
+    <h3>Estado central do sistema</h3>
+    <ul>
+      <li><code>phAtual</code></li>
+      <li><code>bombaLigada</code></li>
+      <li><code>modoAtual</code> (<code>simulado</code> ou <code>real</code>)</li>
+      <li><code>ultimaAtualizacao</code></li>
+      <li><code>origemLeitura</code> (<code>simulada</code> ou <code>hardware</code>)</li>
+    </ul>
+
+    <h3>Endpoints principais garantidos</h3>
+    <ul>
+      <li><code>GET /api/health</code></li>
+      <li><code>GET /api/state</code></li>
+      <li><code>POST /api/sensor/ph</code></li>
+      <li><code>POST /api/control/pump</code></li>
+      <li><code>POST /api/mode</code></li>
+    </ul>
+
+    <h3>Regra de automação da bomba</h3>
+    <ul>
+      <li>Se <code>pH &gt; 7</code> → bomba ligada</li>
+      <li>Se <code>pH &lt;= 7</code> → bomba desligada</li>
+    </ul>
+
+    <p>A regra foi isolada em serviço próprio para evitar acoplamento na rota/controller.</p>
+  </section>
+
+  <section class="section">
+    <h2>5. Padronização de Respostas da API</h2>
+    <h3>Sucesso</h3>
+    <p><code>{ "status": "success", "message": "...", "data": {} }</code></p>
+    <h3>Erro</h3>
+    <p><code>{ "status": "error", "message": "..." }</code></p>
+    <p>Padronização aplicada via utilitário compartilhado <code>server/src/utils/httpResponse.js</code>.</p>
+  </section>
+
+  <section class="section">
+    <h2>6. Arquivos Criados</h2>
+    <ul>
+      <li><code>server/src/state/systemState.js</code></li>
+      <li><code>server/src/services/pumpAutomationService.js</code></li>
+      <li><code>server/src/services/systemService.js</code></li>
+      <li><code>server/src/controllers/systemController.js</code></li>
+      <li><code>server/src/routes/system.routes.js</code></li>
+      <li><code>server/src/utils/httpResponse.js</code></li>
+      <li><code>assets/js/constants/api.js</code></li>
+      <li><code>assets/js/utils/http.js</code></li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <h2>7. Arquivos Atualizados (Principais)</h2>
+    <ul>
+      <li><code>server/src/app.js</code>, <code>server/src/server.js</code></li>
+      <li><code>server/src/controllers/*</code> (sensors, actuators, alerts, logs)</li>
+      <li><code>server/src/routes/*</code> (sensors, actuators, alerts, logs)</li>
+      <li><code>server/src/services/sensorsService.js</code>, <code>actuatorsService.js</code></li>
+      <li><code>assets/js/main.js</code>, <code>router.js</code>, <code>state.js</code></li>
+      <li><code>assets/js/mock-data.js</code>, <code>assets/js/services/api.js</code></li>
+      <li><code>assets/js/modules/automation.js</code></li>
+      <li><code>index.html</code> (ordem de carregamento de scripts)</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <h2>8. O que foi mantido</h2>
+    <ul>
+      <li>Estrutura geral existente do projeto e telas principais.</li>
+      <li>Funcionalidades de dashboard, alertas, logs, estoque, safras e automação.</li>
+      <li>Simulação local de sensores para testes sem hardware.</li>
+      <li>Fluxo de backend com controllers/services/repositories já utilizado.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <h2>9. Validação Técnica Executada</h2>
+    <ul>
+      <li>Verificação de sintaxe (<code>node --check</code>) nos arquivos críticos.</li>
+      <li>Smoke tests de API em ambiente local com sucesso.</li>
+      <li>Validação das rotas novas e das rotas legadas após padronização.</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <h2>10. Como Rodar</h2>
+    <ol>
+      <li>No backend: <code>cd server</code> e <code>npm start</code>.</li>
+      <li>No frontend: servir a raiz do projeto em servidor estático (ex.: Live Server).</li>
+      <li>Definir fonte de dados em <code>assets/js/state.js</code>:
+        <ul>
+          <li><code>dataSource: "mock"</code> para simulação local.</li>
+          <li><code>dataSource: "api"</code> para backend Node.js.</li>
+        </ul>
+      </li>
+    </ol>
+  </section>
+
+  <section class="section">
+    <h2>11. Próximos Passos Recomendados</h2>
+    <ul>
+      <li>Conectar ESP32 real aos endpoints de pH e telemetria.</li>
+      <li>Implementar ponte real para acionamento físico da bomba.</li>
+      <li>Adicionar testes de integração automatizados para regras críticas.</li>
+      <li>Opcional: persistir estado central para recuperação após reinício.</li>
+    </ul>
+  </section>
+
+  <div class="footer">
+    Documento gerado para continuidade técnica do projeto INOVATECH ASTRO VERDE.
+  </div>
+</body>
+</html>

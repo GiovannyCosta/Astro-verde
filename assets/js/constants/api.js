@@ -1,15 +1,12 @@
-/*
- * constants/api.js - Enderecos e rotas da API do Astro Verde.
- *
- * Centralizar endpoints aqui facilita:
- * - trocar host/porta
- * - atualizar versoes da API
- * - integrar ambiente local x producao
+/**
+ * @module apiConfig
+ * @description Endpoints HTTP de infraestrutura e automacao.
+ * @hardware esp32/esp8266
+ * @mode real
  */
 
 const ApiConfig = {
   baseUrl: 'http://localhost:3001/api',
-
   endpoints: {
     sensorsLatest: '/sensors/latest',
     sensorsCsv: '/sensors/export/csv',
@@ -22,5 +19,7 @@ const ApiConfig = {
     sensorPh: '/sensor/ph',
     controlPump: '/control/pump',
     mode: '/mode',
+    setFluxo: '/manual-controls/fluxo',
+    setLuz: '/manual-controls/luz',
   },
 };

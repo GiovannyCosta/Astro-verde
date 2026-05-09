@@ -1,45 +1,42 @@
-/*
- * modules/logs.js — Log Operacional e Status de Módulos
+/**
+ * @module logs
+ * @description LiveLogs com filtro por nivel e scroll automatico.
+ * @hardware esp32/esp8266
+ * @mode real
  */
 
 const Logger = {
-
   MAX_ENTRIES: 200,
 
   add(type, title, message) {
-    AppState.logs.unshift({
-      type, title, message,
-      timestamp: new Date().toLocaleString('pt-BR'),
-    });
+    AppState.logs.unshift({ type, title, message, timestamp: new Date().toISOString(), category: title });
     if (AppState.logs.length > this.MAX_ENTRIES) AppState.logs.pop();
-
-    // Se a aba de log estiver ativa, atualiza em tempo real
-    const logSection = document.getElementById('log');
-    if (logSection && logSection.classList.contains('active')) {
-      this._renderLogEntries();
-    }
+    this._renderLogEntries();
   },
 
   render() {
     this._renderModuleStatus();
+    this._bindFilters();
     this._renderLogEntries();
+  },
+
+  _bindFilters() {
+    document.querySelectorAll('[data-log-filter]').forEach((btn) => {
+      btn.onclick = () => {
+        AppState.liveLogsFilter = btn.dataset.logFilter;
+        this._renderLogEntries();
+      };
+    });
   },
 
   _renderModuleStatus() {
     const container = document.getElementById('moduleStatus');
     if (!container) return;
-
     container.innerHTML = '';
-    AppState.modules.forEach(m => {
+    AppState.modules.forEach((m) => {
       const div = document.createElement('div');
       div.className = 'list-item';
-      div.innerHTML = `
-        <div class="item-info">
-          <h4>${m.name}</h4>
-          <p>Status: <span class="${m.active ? 'status-ok' : 'status-danger'}">${m.active ? 'Ativo' : 'Inativo'}</span></p>
-        </div>
-        <span class="badge-status ${m.active ? 'active' : 'inactive'}">${m.active ? 'Online' : 'Offline'}</span>
-      `;
+      div.innerHTML = `<div class="item-info"><h4>${m.name}</h4><p>Status: <span class="${m.active ? 'status-ok' : 'status-danger'}">${m.active ? 'Ativo' : 'Inativo'}</span></p></div><span class="badge-status ${m.active ? 'active' : 'inactive'}">${m.active ? 'Online' : 'Offline'}</span>`;
       container.appendChild(div);
     });
   },
@@ -47,31 +44,17 @@ const Logger = {
   _renderLogEntries() {
     const container = document.getElementById('logsContainer');
     if (!container) return;
-
     const countEl = document.getElementById('logCount');
-    if (countEl) countEl.textContent = `${AppState.logs.length} entrada(s)`;
 
-    container.innerHTML = '';
+    const filter = AppState.liveLogsFilter;
+    const logs = AppState.logs.filter((entry) => filter === 'all' || entry.type === filter);
+    if (countEl) countEl.textContent = `${logs.length} entrada(s)`;
 
-    if (AppState.logs.length === 0) {
-      container.innerHTML = '<div class="list-item"><div class="item-info"><p>Nenhum evento registrado.</p></div></div>';
-      return;
-    }
+    container.innerHTML = logs.slice(0, 100).reverse().map((log) => {
+      const hhmmss = new Date(log.timestamp).toLocaleTimeString('pt-BR');
+      return `<div class="live-log-line log-${log.type}">[${hhmmss}] [${(log.category || 'system').toUpperCase()}] ${log.message}</div>`;
+    }).join('');
 
-    AppState.logs.forEach(log => {
-      const div = document.createElement('div');
-      div.className = 'list-item';
-      div.innerHTML = `
-        <div class="item-info">
-          <h4>
-            <span class="log-type-badge ${log.type}">${log.type.toUpperCase()}</span>
-            &nbsp;${log.title}
-          </h4>
-          <p>${log.message}</p>
-        </div>
-        <span class="log-timestamp">${log.timestamp}</span>
-      `;
-      container.appendChild(div);
-    });
+    container.scrollTop = container.scrollHeight;
   },
 };

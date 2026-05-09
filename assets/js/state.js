@@ -1,18 +1,11 @@
-/*
- * state.js - Estado global da interface Astro Verde.
- *
- * Este arquivo separa claramente:
- * - leituras de sensores para UI
- * - estado dos atuadores
- * - estado central do sistema (modo, pH, bomba, origem)
- * - configuracoes de regra e metadados de interface
- *
- * Como todos os modulos leem este objeto, fica simples evoluir sem
- * espalhar variaveis globais desconectadas.
+/**
+ * @module state
+ * @description Estado global incluindo sensores real/simulated/editable e metadados de origem.
+ * @hardware esp32/esp8266
+ * @mode real
  */
 
 const AppState = {
-  /* Leitura exibida no dashboard principal. */
   sensors: {
     ph: 6.1,
     ec: 1.75,
@@ -22,9 +15,22 @@ const AppState = {
     luminosity: 800,
     waterLevel: 88,
     nftFlow: true,
+    boia: true,
+    nivel_reservatorio: 88,
+    fluxo_laminar: 0,
+    iluminacao: { modo: 'manual', on: true, intensidade: 100 },
   },
 
-  /* Estado visual dos atuadores exibido em cards e paines. */
+  sensorMeta: {
+    ph: { mode: 'real', lastReadingAt: null },
+    boia: { mode: 'real', lastReadingAt: null },
+    nivel_reservatorio: { mode: 'real', lastReadingAt: null },
+    ec: { mode: 'simulated', lastReadingAt: null },
+    temperature: { mode: 'simulated', lastReadingAt: null },
+    fluxo_laminar: { mode: 'editable', lastReadingAt: null },
+    iluminacao: { mode: 'editable', lastReadingAt: null },
+  },
+
   actuators: {
     lightingCommand: 'on',
     lightingState: 'acesa',
@@ -33,10 +39,6 @@ const AppState = {
     heatingActive: false,
   },
 
-  /*
-   * Estado central de integracao fisica.
-   * Esses campos espelham a API /api/state para facilitar transicao para ESP32.
-   */
   system: {
     phAtual: 6.1,
     bombaLigada: false,
@@ -45,7 +47,6 @@ const AppState = {
     origemLeitura: 'simulada',
   },
 
-  /* Limites de negocio usados pelas regras e badges visuais. */
   config: {
     ph: { min: 5.5, max: 6.5 },
     ec: { min: 1.2, max: 2.5 },
@@ -54,13 +55,10 @@ const AppState = {
     lightCycleHours: { on: 16, off: 8 },
   },
 
-  /* Alertas ativos renderizados no banner superior. */
   alerts: [],
-
-  /* Log exibido na aba de eventos. */
   logs: [],
+  liveLogsFilter: 'all',
 
-  /* Status dos modulos/dispositivos exibidos na aba de log. */
   modules: [
     { id: 'torreA', name: 'Torre A - 3 Modulos Empilhados', active: true },
     { id: 'torreB', name: 'Torre B - 2 Modulos Empilhados', active: true },
@@ -69,13 +67,6 @@ const AppState = {
     { id: 'iluminacao', name: 'Sistema de Iluminacao LED', active: true },
   ],
 
-  /*
-   * Fonte atual de dados da aplicacao:
-   * - "mock": usa simulador local em JavaScript
-   * - "api": consome backend Node.js
-   */
-  dataSource: 'mock',
-
-  /* Contador de notificacoes nao lidas exibido na topbar. */
+  dataSource: 'api',
   unreadNotifications: 1,
 };

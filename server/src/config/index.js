@@ -1,35 +1,47 @@
-/*
- * config/index.js — Configurações Centralizadas do Servidor
- *
- * Centralizar configurações aqui evita valores espalhados pelo código.
- * No futuro, essas configurações podem vir de variáveis de ambiente
- * (process.env) para diferentes ambientes: dev, staging, produção.
+/**
+ * @module config
+ * @description Configuracoes de dominio e infraestrutura para operacao real/simulada/editavel.
+ * @hardware esp32/esp8266
+ * @mode real
  */
 
 const config = {
-
-  /* Porta onde o servidor Express vai escutar */
   PORT: process.env.PORT || 3001,
-
-  /* Caminho do banco de dados SQLite */
   DB_PATH: process.env.DB_PATH || './src/database/astroverde.db',
 
-  /* Configurações das faixas ideais (podem ser salvas no banco no futuro) */
-  SENSOR_LIMITS: {
-    ph:          { min: 5.5, max: 6.5 },
-    ec:          { min: 1.2, max: 2.5 },
-    temperature: { min: 18, max: 26, critical: 30 },
-    luminosity:  { minExpected: 200 },
+  SUPABASE_URL: process.env.SUPABASE_URL || '',
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || '',
+
+  ESP_OFFLINE_THRESHOLD_MS: Number(process.env.ESP_OFFLINE_THRESHOLD_MS || 300000),
+  ESP_DEVICE_IDS: (process.env.ESP_DEVICE_IDS || '').split(',').map((v) => v.trim()).filter(Boolean),
+
+  PH_MIN: Number(process.env.PH_MIN || 5.5),
+  PH_MAX: Number(process.env.PH_MAX || 6.5),
+  BOIA_VAZIA_TIMEOUT_MIN: Number(process.env.BOIA_VAZIA_TIMEOUT_MIN || 5),
+  NIVEL_RESERVATORIO_ALERTA: Number(process.env.NIVEL_RESERVATORIO_ALERTA || 20),
+
+  TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || '',
+  TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID || '',
+
+  SENSOR_MODES: {
+    ph: 'real',
+    boia: 'real',
+    nivel_reservatorio: 'real',
+    minerais: 'simulated',
+    temperatura_ambiente: 'simulated',
+    fluxo_laminar: 'editable',
+    iluminacao: 'editable',
   },
 
-  /* Intervalo de simulação do sensor (ms) */
-  SIMULATOR_INTERVAL_MS: 3000,
+  SENSOR_LIMITS: {
+    ph: { min: 5.5, max: 6.5 },
+    ec: { min: 1.2, max: 2.5 },
+    temperature: { min: 18, max: 26, critical: 30 },
+    luminosity: { minExpected: 200 },
+  },
 
-  /*
-   * CORS: permite que o frontend (aberto no browser)
-   * acesse o backend em outra porta (localhost:3001).
-   * Em produção, restrinja para o domínio real.
-   */
+  SIMULATOR_INTERVAL_MS: 3000,
   CORS_ORIGINS: ['http://localhost:5500', 'http://127.0.0.1:5500', '*'],
 };
 

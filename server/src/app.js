@@ -1,135 +1,98 @@
-/*
- * app.js — Configuração do Express (Aplicação HTTP)
- *
- * Este arquivo configura o Express: middlewares, rotas e
- * instância de todos os módulos (Dependency Injection manual).
- *
- * Por que separar app.js de server.js?
- * server.js faz o .listen() (abre a porta).
- * app.js configura a lógica.
- * Essa separação facilita testes: os testes importam app.js
- * sem precisar abrir uma porta real.
- *
- * Dependency Injection:
- * Criamos o banco → criamos os repos → criamos os services
- * → criamos os controllers → registramos as rotas.
- * Cada camada recebe suas dependências como parâmetro,
- * não importa diretamente — facilita testes e troca de banco.
+/**
+ * @module app
+ * @description Configuracao Express com bridge ESP, controles editaveis e integracao Supabase.
+ * @hardware esp32/esp8266
+ * @mode real
  */
 
 const express = require('express');
-const cors    = require('cors');
-const path    = require('path');
+const cors = require('cors');
+const path = require('path');
 
-const config    = require('./config');
-
-/* --- Banco de dados --- */
+const config = require('./config');
 const { initDatabase } = require('./database/seed');
-
-/* --- Repositórios --- */
-const makeSensorsRepository   = require('./repositories/sensorsRepository');
-const makeAlertsRepository    = require('./repositories/alertsRepository');
-const makeLogsRepository      = require('./repositories/logsRepository');
-
-/* --- Services --- */
-const makeSensorsService   = require('./services/sensorsService');
+const makeSensorsRepository = require('./repositories/sensorsRepository');
+const makeAlertsRepository = require('./repositories/alertsRepository');
+const makeLogsRepository = require('./repositories/logsRepository');
+const makeSensorsService = require('./services/sensorsService');
 const makeActuatorsService = require('./services/actuatorsService');
-const makeSystemService    = require('./services/systemService');
-
-/* --- Controllers --- */
-const makeSensorsController   = require('./controllers/sensorsController');
-const makeAlertsController    = require('./controllers/alertsController');
+const makeSystemService = require('./services/systemService');
+const makeSensorsController = require('./controllers/sensorsController');
+const makeAlertsController = require('./controllers/alertsController');
 const makeActuatorsController = require('./controllers/actuatorsController');
-const makeLogsController      = require('./controllers/logsController');
-const makeSystemController    = require('./controllers/systemController');
-
-/* --- Estado global em memoria --- */
-const systemState = require('./state/systemState');
-
-/* --- Rotas --- */
-const makeSensorsRouter   = require('./routes/sensors.routes');
-const makeAlertsRouter    = require('./routes/alerts.routes');
+const makeLogsController = require('./controllers/logsController');
+const makeSystemController = require('./controllers/systemController');
+const makeSensorsRouter = require('./routes/sensors.routes');
+const makeAlertsRouter = require('./routes/alerts.routes');
 const makeActuatorsRouter = require('./routes/actuators.routes');
-const makeLogsRouter      = require('./routes/logs.routes');
-const makeSystemRouter    = require('./routes/system.routes');
+const makeLogsRouter = require('./routes/logs.routes');
+const makeSystemRouter = require('./routes/system.routes');
+const makeEspRouter = require('./routes/esp.routes');
+const makeEspController = require('./controllers/espController');
+const makeEspService = require('./services/espService');
+const makeManualControlsService = require('./services/manualControlsService');
+const makeManualControlsController = require('./controllers/manualControlsController');
+const makeManualControlsRouter = require('./routes/manual-controls.routes');
+const { getSupabase } = require('./integrations/supabase');
+const logger = require('./services/logger');
 const { sendSuccess } = require('./utils/httpResponse');
+
+const systemState = require('./state/systemState');
 
 function createApp() {
   const app = express();
-
-  /* --- Middlewares globais --- */
-
-  /* CORS: permite chamadas do browser (frontend em outro arquivo/porta) */
   app.use(cors({ origin: config.CORS_ORIGINS }));
-
-  /* Parse de JSON no body das requisições */
   app.use(express.json());
 
-  /* Serve arquivos estáticos do frontend (pasta raiz do projeto) */
   const frontendPath = path.resolve(__dirname, '../../');
   app.use(express.static(frontendPath));
 
-  /* --- Inicialização do banco --- */
   const db = initDatabase();
+  const sensorsRepo = makeSensorsRepository(db);
+  const alertsRepo = makeAlertsRepository(db);
+  const logsRepo = makeLogsRepository(db);
 
-  /* --- Instância dos repositórios --- */
-  const sensorsRepo   = makeSensorsRepository(db);
-  const alertsRepo    = makeAlertsRepository(db);
-  const logsRepo      = makeLogsRepository(db);
-
-  /* --- Instância dos services --- */
-  const sensorsService   = makeSensorsService(sensorsRepo, alertsRepo, logsRepo);
+  const sensorsService = makeSensorsService(sensorsRepo, alertsRepo, logsRepo);
   const actuatorsService = makeActuatorsService(db);
-  const systemService    = makeSystemService(systemState);
+  const systemService = makeSystemService(systemState);
 
-  /* --- Instância dos controllers --- */
-  const sensorsCtrl   = makeSensorsController(sensorsService);
-  const alertsCtrl    = makeAlertsController(alertsRepo);
+  const sensorsCtrl = makeSensorsController(sensorsService);
+  const alertsCtrl = makeAlertsController(alertsRepo);
   const actuatorsCtrl = makeActuatorsController(actuatorsService);
-  const logsCtrl      = makeLogsController(logsRepo);
-  const systemCtrl    = makeSystemController(systemService);
+  const logsCtrl = makeLogsController(logsRepo);
+  const systemCtrl = makeSystemController(systemService);
 
-  /* --- Registro das rotas --- */
-  app.use('/api/sensors',    makeSensorsRouter(sensorsCtrl));
-
-  /*
-   * POST /api/telemetry — ponto de entrada direto para o ESP32
-   * O ESP32 envia dados aqui. O mesmo handler de ingestão é usado.
-   * Separado do router de sensores para ter uma URL limpa.
-   */
+  app.use('/api/sensors', makeSensorsRouter(sensorsCtrl));
   app.post('/api/telemetry', (req, res) => sensorsCtrl.ingestTelemetry(req, res));
-  app.use('/api/alerts',     makeAlertsRouter(alertsCtrl));
-  app.use('/api/actuators',  makeActuatorsRouter(actuatorsCtrl));
-  app.use('/api/logs',       makeLogsRouter(logsCtrl));
-  app.use('/api',            makeSystemRouter(systemCtrl));
+  app.use('/api/alerts', makeAlertsRouter(alertsCtrl));
+  app.use('/api/actuators', makeActuatorsRouter(actuatorsCtrl));
+  app.use('/api/logs', makeLogsRouter(logsCtrl));
+  app.use('/api', makeSystemRouter(systemCtrl));
 
-  /* --- Rota raiz da API --- */
-  app.get('/api', (req, res) => {
-    sendSuccess(res, 'API Astro Verde online.', {
-      name:    'Astro Verde API',
-      version: '1.0.0',
-      status:  'online',
-      endpoints: [
-        'GET  /api/sensors/latest',
-        'GET  /api/sensors/export/csv',
-        'POST /api/telemetry',
-        'POST /api/sensor/ph',
-        'GET  /api/state',
-        'POST /api/control/pump',
-        'POST /api/mode',
-        'GET  /api/health',
-        'GET  /api/alerts',
-        'GET  /api/alerts/history',
-        'POST /api/alerts/:type/resolve',
-        'GET  /api/actuators',
-        'POST /api/actuators/lighting',
-        'POST /api/actuators/temperature',
-        'GET  /api/logs',
-      ],
+  const supabase = getSupabase();
+  if (supabase) {
+    const espService = makeEspService({ supabase, logger });
+    const espCtrl = makeEspController(espService);
+    const manualControlsService = makeManualControlsService({
+      supabase,
+      espService,
+      logger,
+      defaultDeviceId: config.ESP_DEVICE_IDS[0] || 'astro-verde-esp',
     });
+    const manualControlsCtrl = makeManualControlsController(manualControlsService);
+
+    app.use('/api/esp', makeEspRouter(espCtrl));
+    app.use('/api/manual-controls', makeManualControlsRouter(manualControlsCtrl));
+
+    setInterval(() => {
+      espService.checkOfflineDevices().catch(() => {});
+    }, 30000);
+  }
+
+  app.get('/api', (req, res) => {
+    sendSuccess(res, 'API Astro Verde online.', { status: 'online' });
   });
 
-  /* --- Fallback: serve o frontend para qualquer rota não-API --- */
   app.get('*', (req, res) => {
     res.sendFile(path.join(frontendPath, 'index.html'));
   });
